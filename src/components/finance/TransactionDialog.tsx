@@ -5,10 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Transaction, TxType, REVENUE_CATEGORIES, EXPENSE_CATEGORIES, PAYMENT_METHODS } from "@/lib/finance/types";
+import { Transaction, TxType, PAYMENT_METHODS } from "@/lib/finance/types";
 import { DatePicker } from "./DatePicker";
 import { useFinance } from "@/lib/finance/store";
 import { toast } from "sonner";
+import { CategoryDialog } from "./CategoryDialog";
+import { Plus } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -18,9 +20,10 @@ interface Props {
 }
 
 export function TransactionDialog({ open, onOpenChange, type, editing }: Props) {
-  const { add, update } = useFinance();
+  const { add, update, allCategories } = useFinance();
   const isExpense = type === "expense";
-  const categories = isExpense ? EXPENSE_CATEGORIES : REVENUE_CATEGORIES;
+  const categories = allCategories(type);
+  const [catOpen, setCatOpen] = useState(false);
 
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [amount, setAmount] = useState("");
@@ -87,7 +90,12 @@ export function TransactionDialog({ open, onOpenChange, type, editing }: Props) 
           </div>
 
           <div className="space-y-1.5">
-            <Label>Catégorie *</Label>
+            <div className="flex items-center justify-between">
+              <Label>Catégorie *</Label>
+              <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs text-primary hover:text-primary" onClick={() => setCatOpen(true)}>
+                <Plus className="h-3 w-3 mr-1" /> Nouvelle catégorie
+              </Button>
+            </div>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger><SelectValue placeholder="Choisir une catégorie" /></SelectTrigger>
               <SelectContent>
