@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Pencil, Trash2, Plus, Search } from "lucide-react";
+import { Pencil, Trash2, Plus, Search, Tags } from "lucide-react";
+import { CategoryDialog } from "./CategoryDialog";
 import { Transaction, TxType } from "@/lib/finance/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ export function TransactionList({ type }: Props) {
   const [editing, setEditing] = useState<Transaction | null>(null);
   const [search, setSearch] = useState("");
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [catOpen, setCatOpen] = useState(false);
 
   const isExpense = type === "expense";
   const list = useMemo(() => {
@@ -51,10 +53,16 @@ export function TransactionList({ type }: Props) {
             {list.length} transaction{list.length > 1 ? "s" : ""} • Total {formatGNF(total)}
           </p>
         </div>
-        <Button onClick={() => { setEditing(null); setOpen(true); }} className="gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
-          <Plus className="h-4 w-4 mr-2" />
-          {isExpense ? "Nouvelle dépense" : "Nouveau revenu"}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setCatOpen(true)}>
+            <Tags className="h-4 w-4 mr-2" />
+            Catégories
+          </Button>
+          <Button onClick={() => { setEditing(null); setOpen(true); }} className="gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
+            <Plus className="h-4 w-4 mr-2" />
+            {isExpense ? "Nouvelle dépense" : "Nouveau revenu"}
+          </Button>
+        </div>
       </div>
 
       <div className="relative">
@@ -108,6 +116,7 @@ export function TransactionList({ type }: Props) {
       </div>
 
       <TransactionDialog open={open} onOpenChange={setOpen} type={type} editing={editing} />
+      <CategoryDialog open={catOpen} onOpenChange={setCatOpen} defaultType={type} />
 
       <AlertDialog open={!!confirmId} onOpenChange={(o) => !o && setConfirmId(null)}>
         <AlertDialogContent>
