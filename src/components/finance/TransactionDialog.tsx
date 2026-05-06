@@ -140,6 +140,12 @@ export function TransactionDialog({ open, onOpenChange, type, editing }: Props) 
           </Button>
         </DialogFooter>
       </DialogContent>
+      <CategoryDialog
+        open={catOpen}
+        onOpenChange={setCatOpen}
+        defaultType={type}
+        onCreated={(t, name) => { if (t === type) setCategory(name); }}
+      />
     </Dialog>
   );
 }
