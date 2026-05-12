@@ -12,7 +12,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useFinance } from "@/lib/finance/store";
 import { TransactionDialog } from "./TransactionDialog";
-import { formatGNF } from "@/lib/finance/format";
+
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "sonner";
@@ -20,7 +20,7 @@ import { toast } from "sonner";
 interface Props { type: TxType }
 
 export function TransactionList({ type }: Props) {
-  const { transactions, remove } = useFinance();
+  const { transactions, remove, formatMoney } = useFinance();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
   const [search, setSearch] = useState("");
@@ -50,7 +50,7 @@ export function TransactionList({ type }: Props) {
             {isExpense ? "Dépenses" : "Revenus"}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {list.length} transaction{list.length > 1 ? "s" : ""} • Total {formatGNF(total)}
+            {list.length} transaction{list.length > 1 ? "s" : ""} • Total {formatMoney(total)}
           </p>
         </div>
         <div className="flex gap-2">
@@ -96,7 +96,7 @@ export function TransactionList({ type }: Props) {
                   <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{(isExpense ? t.supplier : t.reference) || "—"}</TableCell>
                   <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{t.paymentMethod || "—"}</TableCell>
                   <TableCell className={`text-right font-semibold ${isExpense ? "text-destructive" : "text-success"}`}>
-                    {isExpense ? "-" : "+"}{formatGNF(t.amount)}
+                    {isExpense ? "-" : "+"}{formatMoney(t.amount)}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
