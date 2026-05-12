@@ -1,68 +1,175 @@
-import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from "react";
-import { Transaction, TxType, REVENUE_CATEGORIES, EXPENSE_CATEGORIES } from "./types";
-import { SEED_TRANSACTIONS } from "./seed";
+import { createContext, useContext, useEffect, useMemo, useState, ReactNode, useCallback } from "react";
+import {
+  Transaction, TxType, REVENUE_CATEGORIES, EXPENSE_CATEGORIES, Workspace, WorkspaceKind,
+} from "./types";
+import { SEED_TRANSACTIONS, DEFAULT_WORKSPACE_ID } from "./seed";
+import { formatMoney as fmtMoney } from "./format";
 
-const STORAGE_KEY = "finpilot.transactions.v1";
-const CATEGORIES_KEY = "finpilot.categories.v1";
+const TX_KEY = "finpilot.transactions.v2";
+const CAT_KEY = "finpilot.categories.v2";
+const WS_KEY = "finpilot.workspaces.v1";
+const SETTINGS_KEY = "finpilot.settings.v1";
 
 interface CustomCategories {
-  revenue: string[];
-  expense: string[];
+  // keyed by workspaceId
+  [workspaceId: string]: { revenue: string[]; expense: string[] };
+}
+
+interface Settings {
+  onboarded: boolean;
+  currentWorkspaceId: string;
 }
 
 interface FinanceCtx {
-  transactions: Transaction[];
-  add: (t: Omit<Transaction, "id">) => void;
-  update: (id: string, t: Omit<Transaction, "id">) => void;
+  // Workspaces
+  workspaces: Workspace[];
+  currentWorkspace: Workspace;
+  switchWorkspace: (id: string) => void;
+  createWorkspace: (data: { name: string; kind: WorkspaceKind; currency: string; color?: string }) => Workspace;
+  updateWorkspace: (id: string, data: Partial<Omit<Workspace, "id" | "createdAt">>) => void;
+  removeWorkspace: (id: string) => void;
+
+  // Settings / onboarding
+  settings: Settings;
+  completeOnboarding: (data: { workspaceName: string; currency: string }) => void;
+
+  // Transactions (scoped to current workspace)
+  transactions: Transaction[]; // filtered to current workspace
+  allTransactions: Transaction[]; // raw
+  add: (t: Omit<Transaction, "id" | "workspaceId">) => void;
+  update: (id: string, t: Omit<Transaction, "id" | "workspaceId">) => void;
   remove: (id: string) => void;
-  resetSeed: () => void;
-  customCategories: CustomCategories;
+
+  // Categories (scoped to current workspace)
+  customCategories: { revenue: string[]; expense: string[] };
   allCategories: (type: TxType) => string[];
   addCategory: (type: TxType, name: string) => boolean;
   removeCategory: (type: TxType, name: string) => void;
+
+  // Money
+  currency: string;
+  formatMoney: (n: number) => string;
 }
 
 const Ctx = createContext<FinanceCtx | null>(null);
 
-const uid = () => `tx-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+const uid = (p = "tx") => `${p}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+const COLORS = ["violet", "blue", "emerald", "amber", "rose", "cyan", "indigo", "fuchsia", "teal", "orange"];
+
+function loadJSON<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) return JSON.parse(raw) as T;
+  } catch {}
+  return fallback;
+}
+
+function defaultWorkspace(): Workspace {
+  return {
+    id: DEFAULT_WORKSPACE_ID,
+    name: "Personnel",
+    kind: "personal",
+    currency: "GNF",
+    color: "violet",
+    createdAt: new Date().toISOString(),
+  };
+}
 
 export function FinanceProvider({ children }: { children: ReactNode }) {
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    if (typeof window === "undefined") return SEED_TRANSACTIONS;
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    return SEED_TRANSACTIONS;
-  });
+  const [workspaces, setWorkspaces] = useState<Workspace[]>(() =>
+    loadJSON<Workspace[]>(WS_KEY, [defaultWorkspace()])
+  );
 
-  const [customCategories, setCustomCategories] = useState<CustomCategories>(() => {
-    if (typeof window === "undefined") return { revenue: [], expense: [] };
-    try {
-      const raw = localStorage.getItem(CATEGORIES_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    return { revenue: [], expense: [] };
-  });
+  const [settings, setSettings] = useState<Settings>(() =>
+    loadJSON<Settings>(SETTINGS_KEY, { onboarded: false, currentWorkspaceId: DEFAULT_WORKSPACE_ID })
+  );
 
+  const [transactions, setTransactions] = useState<Transaction[]>(() =>
+    loadJSON<Transaction[]>(TX_KEY, SEED_TRANSACTIONS)
+  );
+
+  const [customCategories, setCustomCategories] = useState<CustomCategories>(() =>
+    loadJSON<CustomCategories>(CAT_KEY, {})
+  );
+
+  useEffect(() => { try { localStorage.setItem(WS_KEY, JSON.stringify(workspaces)); } catch {} }, [workspaces]);
+  useEffect(() => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {} }, [settings]);
+  useEffect(() => { try { localStorage.setItem(TX_KEY, JSON.stringify(transactions)); } catch {} }, [transactions]);
+  useEffect(() => { try { localStorage.setItem(CAT_KEY, JSON.stringify(customCategories)); } catch {} }, [customCategories]);
+
+  // Ensure currentWorkspaceId is valid
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions)); } catch {}
-  }, [transactions]);
+    if (!workspaces.some((w) => w.id === settings.currentWorkspaceId) && workspaces.length > 0) {
+      setSettings((s) => ({ ...s, currentWorkspaceId: workspaces[0].id }));
+    }
+  }, [workspaces, settings.currentWorkspaceId]);
 
-  useEffect(() => {
-    try { localStorage.setItem(CATEGORIES_KEY, JSON.stringify(customCategories)); } catch {}
-  }, [customCategories]);
+  const currentWorkspace = useMemo(
+    () => workspaces.find((w) => w.id === settings.currentWorkspaceId) ?? workspaces[0] ?? defaultWorkspace(),
+    [workspaces, settings.currentWorkspaceId]
+  );
 
-  const value = useMemo<FinanceCtx>(() => ({
-    transactions,
-    add: (t) => setTransactions((cur) => [{ ...t, id: uid() }, ...cur]),
-    update: (id, t) => setTransactions((cur) => cur.map((x) => (x.id === id ? { ...t, id } : x))),
+  const scopedTx = useMemo(
+    () => transactions.filter((t) => t.workspaceId === currentWorkspace.id),
+    [transactions, currentWorkspace.id]
+  );
+
+  const wsCustom = customCategories[currentWorkspace.id] ?? { revenue: [], expense: [] };
+
+  const formatMoney = useCallback((n: number) => fmtMoney(n, currentWorkspace.currency), [currentWorkspace.currency]);
+
+  const value: FinanceCtx = {
+    workspaces,
+    currentWorkspace,
+    switchWorkspace: (id) => setSettings((s) => ({ ...s, currentWorkspaceId: id })),
+    createWorkspace: ({ name, kind, currency, color }) => {
+      const ws: Workspace = {
+        id: uid("ws"),
+        name: name.trim() || "Nouvel espace",
+        kind,
+        currency,
+        color: color ?? COLORS[workspaces.length % COLORS.length],
+        createdAt: new Date().toISOString(),
+      };
+      setWorkspaces((cur) => [...cur, ws]);
+      setSettings((s) => ({ ...s, currentWorkspaceId: ws.id }));
+      return ws;
+    },
+    updateWorkspace: (id, data) =>
+      setWorkspaces((cur) => cur.map((w) => (w.id === id ? { ...w, ...data } : w))),
+    removeWorkspace: (id) => {
+      setWorkspaces((cur) => cur.filter((w) => w.id !== id));
+      setTransactions((cur) => cur.filter((t) => t.workspaceId !== id));
+      setCustomCategories((cur) => {
+        const next = { ...cur }; delete next[id]; return next;
+      });
+    },
+
+    settings,
+    completeOnboarding: ({ workspaceName, currency }) => {
+      setWorkspaces((cur) => {
+        const idx = cur.findIndex((w) => w.id === DEFAULT_WORKSPACE_ID);
+        if (idx === -1) return cur;
+        const next = [...cur];
+        next[idx] = { ...next[idx], name: workspaceName.trim() || "Personnel", currency };
+        return next;
+      });
+      setSettings({ onboarded: true, currentWorkspaceId: DEFAULT_WORKSPACE_ID });
+    },
+
+    transactions: scopedTx,
+    allTransactions: transactions,
+    add: (t) => setTransactions((cur) => [{ ...t, id: uid(), workspaceId: currentWorkspace.id }, ...cur]),
+    update: (id, t) =>
+      setTransactions((cur) => cur.map((x) => (x.id === id ? { ...t, id, workspaceId: x.workspaceId } : x))),
     remove: (id) => setTransactions((cur) => cur.filter((x) => x.id !== id)),
-    resetSeed: () => setTransactions(SEED_TRANSACTIONS),
-    customCategories,
+
+    customCategories: wsCustom,
     allCategories: (type) => {
       const base = type === "revenue" ? [...REVENUE_CATEGORIES] : [...EXPENSE_CATEGORIES];
-      return [...base, ...customCategories[type]];
+      return [...base, ...wsCustom[type]];
     },
     addCategory: (type, name) => {
       const trimmed = name.trim();
@@ -70,15 +177,24 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       const base = type === "revenue" ? REVENUE_CATEGORIES : EXPENSE_CATEGORIES;
       const exists =
         base.some((c) => c.toLowerCase() === trimmed.toLowerCase()) ||
-        customCategories[type].some((c) => c.toLowerCase() === trimmed.toLowerCase());
+        wsCustom[type].some((c) => c.toLowerCase() === trimmed.toLowerCase());
       if (exists) return false;
-      setCustomCategories((cur) => ({ ...cur, [type]: [...cur[type], trimmed] }));
+      setCustomCategories((cur) => {
+        const ws = cur[currentWorkspace.id] ?? { revenue: [], expense: [] };
+        return { ...cur, [currentWorkspace.id]: { ...ws, [type]: [...ws[type], trimmed] } };
+      });
       return true;
     },
     removeCategory: (type, name) => {
-      setCustomCategories((cur) => ({ ...cur, [type]: cur[type].filter((c) => c !== name) }));
+      setCustomCategories((cur) => {
+        const ws = cur[currentWorkspace.id] ?? { revenue: [], expense: [] };
+        return { ...cur, [currentWorkspace.id]: { ...ws, [type]: ws[type].filter((c) => c !== name) } };
+      });
     },
-  }), [transactions, customCategories]);
+
+    currency: currentWorkspace.currency,
+    formatMoney,
+  };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

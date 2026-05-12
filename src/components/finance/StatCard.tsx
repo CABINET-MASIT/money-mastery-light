@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { formatGNF } from "@/lib/finance/format";
+import { useFinance } from "@/lib/finance/store";
 
 interface Props {
   label: string;
@@ -18,6 +18,7 @@ const variantClass: Record<NonNullable<Props["variant"]>, string> = {
 };
 
 export function StatCard({ label, amount, icon, variant = "neutral", hint }: Props) {
+  const { formatMoney } = useFinance();
   const isColored = variant !== "neutral";
   return (
     <div className={cn("relative overflow-hidden rounded-2xl p-5 shadow-card transition-transform hover:-translate-y-0.5", variantClass[variant])}>
@@ -27,7 +28,7 @@ export function StatCard({ label, amount, icon, variant = "neutral", hint }: Pro
             {label}
           </p>
           <p className="font-display text-2xl md:text-[26px] font-bold tracking-tight truncate">
-            {formatGNF(amount)}
+            {formatMoney(amount)}
           </p>
           {hint && (
             <p className={cn("text-xs", isColored ? "text-primary-foreground/75" : "text-muted-foreground")}>{hint}</p>
