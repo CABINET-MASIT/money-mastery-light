@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useFinance } from "@/lib/finance/store";
 import { FilterBar, FilterState, filterTransactions } from "@/components/finance/FilterBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatGNF, formatShort } from "@/lib/finance/format";
+import { formatShort } from "@/lib/finance/format";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, LineChart, Line } from "recharts";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -11,7 +11,7 @@ const COLORS_REV = ["hsl(160 84% 39%)", "hsl(173 80% 40%)", "hsl(199 89% 48%)", 
 const COLORS_EXP = ["hsl(0 84% 60%)", "hsl(20 90% 55%)", "hsl(38 92% 50%)", "hsl(340 82% 52%)", "hsl(280 65% 60%)", "hsl(15 80% 50%)", "hsl(45 90% 55%)", "hsl(355 75% 55%)", "hsl(25 85% 50%)", "hsl(310 70% 55%)", "hsl(10 75% 60%)"];
 
 export default function Analysis() {
-  const { transactions } = useFinance();
+  const { transactions, formatMoney } = useFinance();
   const [filter, setFilter] = useState<FilterState>({ mode: "all" });
 
   const filtered = useMemo(() => filterTransactions(transactions, filter), [transactions, filter]);

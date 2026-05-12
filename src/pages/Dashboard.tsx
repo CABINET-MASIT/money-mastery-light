@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown, Wallet, Activity } from "lucide-react";
 import { useFinance } from "@/lib/finance/store";
 import { StatCard } from "@/components/finance/StatCard";
 import { FilterBar, FilterState, filterTransactions } from "@/components/finance/FilterBar";
-import { formatGNF, formatShort } from "@/lib/finance/format";
+import { formatShort } from "@/lib/finance/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -11,7 +11,7 @@ import { fr } from "date-fns/locale";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, AreaChart, Area } from "recharts";
 
 export default function Dashboard() {
-  const { transactions } = useFinance();
+  const { transactions, formatMoney, currentWorkspace } = useFinance();
   const [filter, setFilter] = useState<FilterState>({ mode: "all" });
 
   const today = new Date().toISOString().slice(0, 10);
@@ -59,9 +59,9 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 max-w-[1400px]">
       <header>
-        <p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">Tableau de bord</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">{currentWorkspace.name}</p>
         <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight mt-1">Vue d'ensemble financière</h1>
-        <p className="text-muted-foreground mt-2">Suivez en temps réel les performances de votre entreprise.</p>
+        <p className="text-muted-foreground mt-2">Suivez en temps réel vos performances · {currentWorkspace.currency}</p>
       </header>
 
       <section className="space-y-3">
