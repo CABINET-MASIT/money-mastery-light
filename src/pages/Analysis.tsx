@@ -71,7 +71,7 @@ export default function Analysis() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={formatShort} />
-                <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 12 }} formatter={(v: number) => formatGNF(v)} />
+                <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 12 }} formatter={(v: number) => formatMoney(v)} />
                 <Legend />
                 <Line type="monotone" dataKey="Revenus" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} />
                 <Line type="monotone" dataKey="Dépenses" stroke="hsl(var(--destructive))" strokeWidth={2.5} dot={{ r: 3 }} />
@@ -101,7 +101,7 @@ function CategoryBreakdown({ title, data, total, colors, accent }: { title: stri
       <CardHeader>
         <CardTitle className="font-display flex items-center justify-between">
           <span>{title}</span>
-          <span className={`text-sm font-semibold ${accent}`}>{formatGNF(total)}</span>
+          <span className={`text-sm font-semibold ${accent}`}>{formatMoney(total)}</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -115,7 +115,7 @@ function CategoryBreakdown({ title, data, total, colors, accent }: { title: stri
                   <Pie data={data} dataKey="value" nameKey="name" innerRadius={45} outerRadius={75} paddingAngle={2}>
                     {data.map((_, i) => <Cell key={i} fill={colors[i % colors.length]} />)}
                   </Pie>
-                  <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 12 }} formatter={(v: number) => formatGNF(v)} />
+                  <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 12 }} formatter={(v: number) => formatMoney(v)} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -124,7 +124,7 @@ function CategoryBreakdown({ title, data, total, colors, accent }: { title: stri
                 <li key={row.name} className="flex items-center gap-2">
                   <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: colors[i % colors.length] }} />
                   <span className="flex-1 truncate">{row.name}</span>
-                  <span className="font-medium tabular-nums">{formatGNF(row.value)}</span>
+                  <span className="font-medium tabular-nums">{formatMoney(row.value)}</span>
                   <span className="text-muted-foreground tabular-nums w-12 text-right">{row.pct.toFixed(1)}%</span>
                 </li>
               ))}
@@ -146,7 +146,7 @@ function CategoryBars({ data, color, label }: { data: { name: string; value: num
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={formatShort} />
             <YAxis dataKey="name" type="category" stroke="hsl(var(--muted-foreground))" fontSize={11} width={130} />
-            <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 12 }} formatter={(v: number) => formatGNF(v)} />
+            <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 12 }} formatter={(v: number) => formatMoney(v)} />
             <Bar dataKey="value" fill={color} radius={[0, 6, 6, 0]} />
           </BarChart>
         </ResponsiveContainer>

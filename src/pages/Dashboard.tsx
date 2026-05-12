@@ -114,7 +114,7 @@ export default function Dashboard() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={formatShort} />
-                  <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 12 }} formatter={(v: number) => formatGNF(v)} />
+                  <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 12 }} formatter={(v: number) => formatMoney(v)} />
                   <Legend />
                   <Area type="monotone" dataKey="Revenus" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#gRev)" />
                   <Area type="monotone" dataKey="Dépenses" stroke="hsl(var(--destructive))" strokeWidth={2.5} fill="url(#gExp)" />
@@ -135,7 +135,7 @@ export default function Dashboard() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={formatShort} />
-                  <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 12 }} formatter={(v: number) => formatGNF(v)} />
+                  <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 12 }} formatter={(v: number) => formatMoney(v)} />
                   <Legend />
                   <Bar dataKey="Revenus" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
                   <Bar dataKey="Dépenses" fill="hsl(var(--destructive))" radius={[6, 6, 0, 0]} />
@@ -165,7 +165,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className={`font-semibold whitespace-nowrap ${t.type === "revenue" ? "text-success" : "text-destructive"}`}>
-                  {t.type === "revenue" ? "+" : "-"}{formatGNF(t.amount)}
+                  {t.type === "revenue" ? "+" : "-"}{formatMoney(t.amount)}
                 </div>
               </div>
             ))}
