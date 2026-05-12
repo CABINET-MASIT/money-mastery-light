@@ -96,6 +96,7 @@ export default function Analysis() {
 }
 
 function CategoryBreakdown({ title, data, total, colors, accent }: { title: string; data: { name: string; value: number; pct: number }[]; total: number; colors: string[]; accent: string }) {
+  const { formatMoney } = useFinance();
   return (
     <Card className="shadow-card">
       <CardHeader>
@@ -137,6 +138,7 @@ function CategoryBreakdown({ title, data, total, colors, accent }: { title: stri
 }
 
 function CategoryBars({ data, color, label }: { data: { name: string; value: number }[]; color: string; label: string }) {
+  const { formatMoney } = useFinance();
   return (
     <div>
       <h3 className="text-sm font-semibold mb-2 text-muted-foreground">{label}</h3>
