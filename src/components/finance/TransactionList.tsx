@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
-import { Pencil, Trash2, Plus, Search, Tags } from "lucide-react";
-import { CategoryDialog } from "./CategoryDialog";
+import { Pencil, Trash2, Plus, Search, Filter } from "lucide-react";
 import { Transaction, TxType } from "@/lib/finance/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -20,54 +20,65 @@ import { toast } from "sonner";
 interface Props { type: TxType }
 
 export function TransactionList({ type }: Props) {
-  const { transactions, remove, formatMoney } = useFinance();
+  const { transactions, remove, formatMoney, allCategories } = useFinance();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [confirmId, setConfirmId] = useState<string | null>(null);
-  const [catOpen, setCatOpen] = useState(false);
 
   const isExpense = type === "expense";
+  const categories = allCategories(type);
+
   const list = useMemo(() => {
     return transactions
       .filter((t) => t.type === type)
+      .filter((t) => categoryFilter === "all" || t.category === categoryFilter)
       .filter((t) => {
         if (!search.trim()) return true;
         const q = search.toLowerCase();
-        return [t.description, t.category, t.paymentMethod, t.reference, t.supplier]
-          .some((v) => v?.toLowerCase().includes(q));
+        return [t.description, t.category].some((v) => v?.toLowerCase().includes(q));
       })
       .sort((a, b) => b.date.localeCompare(a.date));
-  }, [transactions, type, search]);
+  }, [transactions, type, search, categoryFilter]);
 
   const total = list.reduce((s, t) => s + t.amount, 0);
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="space-y-4 max-w-[900px] mx-auto">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight">
+          <h1 className="font-display text-2xl font-bold tracking-tight">
             {isExpense ? "Dépenses" : "Revenus"}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {list.length} transaction{list.length > 1 ? "s" : ""} • Total {formatMoney(total)}
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {list.length} entrée{list.length > 1 ? "s" : ""} • {formatMoney(total)}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setCatOpen(true)}>
-            <Tags className="h-4 w-4 mr-2" />
-            Catégories
-          </Button>
-          <Button onClick={() => { setEditing(null); setOpen(true); }} className="gradient-primary text-primary-foreground hover:opacity-90 shadow-glow">
-            <Plus className="h-4 w-4 mr-2" />
-            {isExpense ? "Nouvelle dépense" : "Nouveau revenu"}
-          </Button>
-        </div>
+        <Button
+          onClick={() => { setEditing(null); setOpen(true); }}
+          className="gradient-primary text-primary-foreground hover:opacity-90 shadow-glow rounded-full h-11 px-4"
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Ajouter
+        </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input className="pl-9" placeholder="Rechercher par description, catégorie, fournisseur..." value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="grid grid-cols-[1fr_auto] gap-2">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input className="pl-9 rounded-full" placeholder="Rechercher..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-[150px] rounded-full">
+            <Filter className="h-4 w-4 mr-1 text-muted-foreground" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes catégories</SelectItem>
+            {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="rounded-2xl border border-border bg-card shadow-card overflow-hidden">
@@ -75,36 +86,35 @@ export function TransactionList({ type }: Props) {
           <Table>
             <TableHeader>
               <TableRow className="bg-secondary/40 hover:bg-secondary/40">
-                <TableHead className="w-[110px]">Date</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Catégorie</TableHead>
-                <TableHead className="hidden md:table-cell">{isExpense ? "Fournisseur" : "Référence"}</TableHead>
-                <TableHead className="hidden md:table-cell">Paiement</TableHead>
+                <TableHead className="w-[100px]">Date</TableHead>
+                <TableHead>Désignation</TableHead>
                 <TableHead className="text-right">Montant</TableHead>
-                <TableHead className="w-[90px] text-right">Actions</TableHead>
+                <TableHead className="w-[80px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {list.length === 0 && (
-                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-12">Aucune transaction</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-12">Aucune transaction</TableCell></TableRow>
               )}
               {list.map((t) => (
                 <TableRow key={t.id} className="hover:bg-secondary/30">
-                  <TableCell className="font-medium text-sm">{format(new Date(t.date), "dd MMM yyyy", { locale: fr })}</TableCell>
-                  <TableCell className="max-w-[280px] truncate">{t.description}</TableCell>
-                  <TableCell><Badge variant="secondary" className="font-normal">{t.category}</Badge></TableCell>
-                  <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{(isExpense ? t.supplier : t.reference) || "—"}</TableCell>
-                  <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{t.paymentMethod || "—"}</TableCell>
-                  <TableCell className={`text-right font-semibold ${isExpense ? "text-destructive" : "text-success"}`}>
+                  <TableCell className="text-xs font-medium whitespace-nowrap">
+                    {format(new Date(t.date), "dd MMM", { locale: fr })}
+                  </TableCell>
+                  <TableCell className="max-w-0">
+                    <p className="truncate text-sm font-medium">{t.description}</p>
+                    <Badge variant="secondary" className="font-normal text-[10px] mt-1 h-5">{t.category}</Badge>
+                  </TableCell>
+                  <TableCell className={`text-right font-semibold whitespace-nowrap text-sm ${isExpense ? "text-destructive" : "text-success"}`}>
                     {isExpense ? "-" : "+"}{formatMoney(t.amount)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
+                    <div className="flex justify-end">
                       <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditing(t); setOpen(true); }}>
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-3.5 w-3.5" />
                       </Button>
                       <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setConfirmId(t.id)}>
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </TableCell>
@@ -116,19 +126,18 @@ export function TransactionList({ type }: Props) {
       </div>
 
       <TransactionDialog open={open} onOpenChange={setOpen} type={type} editing={editing} />
-      <CategoryDialog open={catOpen} onOpenChange={setCatOpen} defaultType={type} />
 
       <AlertDialog open={!!confirmId} onOpenChange={(o) => !o && setConfirmId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer la transaction ?</AlertDialogTitle>
-            <AlertDialogDescription>Cette action est définitive et ne peut pas être annulée.</AlertDialogDescription>
+            <AlertDialogDescription>Cette action est définitive.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => { if (confirmId) { remove(confirmId); toast.success("Transaction supprimée"); } setConfirmId(null); }}
+              onClick={() => { if (confirmId) { remove(confirmId); toast.success("Supprimée"); } setConfirmId(null); }}
             >
               Supprimer
             </AlertDialogAction>

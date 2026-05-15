@@ -4,10 +4,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AppLayout from "./components/layout/AppLayout";
+import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Revenues from "./pages/Revenues";
 import Expenses from "./pages/Expenses";
-import Analysis from "./pages/Analysis";
+import Synthesis from "./pages/Synthesis";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound.tsx";
 import { FinanceProvider } from "./lib/finance/store";
 
@@ -22,10 +24,13 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route element={<AppLayout />}>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/tableau-de-bord" element={<Dashboard />} />
               <Route path="/revenus" element={<Revenues />} />
               <Route path="/depenses" element={<Expenses />} />
-              <Route path="/analyse" element={<Analysis />} />
+              <Route path="/synthese/revenus" element={<Synthesis type="revenue" />} />
+              <Route path="/synthese/depenses" element={<Synthesis type="expense" />} />
+              <Route path="/parametres" element={<Settings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
