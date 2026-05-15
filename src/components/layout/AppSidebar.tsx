@@ -1,15 +1,18 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, TrendingUp, TrendingDown, BarChart3, Wallet } from "lucide-react";
+import { Home, LayoutDashboard, TrendingUp, TrendingDown, PieChart, Settings, Wallet } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
 
 const items = [
-  { title: "Tableau de bord", url: "/", icon: LayoutDashboard },
+  { title: "Accueil", url: "/", icon: Home },
+  { title: "Tableau de bord", url: "/tableau-de-bord", icon: LayoutDashboard },
   { title: "Revenus", url: "/revenus", icon: TrendingUp },
   { title: "Dépenses", url: "/depenses", icon: TrendingDown },
-  { title: "Analyse financière", url: "/analyse", icon: BarChart3 },
+  { title: "Synthèse revenus", url: "/synthese/revenus", icon: PieChart },
+  { title: "Synthèse dépenses", url: "/synthese/depenses", icon: PieChart },
+  { title: "Paramètres", url: "/parametres", icon: Settings },
 ];
 
 export function AppSidebar() {
