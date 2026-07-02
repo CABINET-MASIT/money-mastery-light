@@ -26,7 +26,7 @@ interface Props { type: TxType }
 type PeriodMode = "today" | "month" | "custom" | "all";
 
 export function TransactionList({ type }: Props) {
-  const { transactions, remove, formatMoney, allCategories, currentWorkspace, currency } = useFinance();
+  const { transactions, remove, formatMoney, allCategories, currentWorkspace } = useFinance();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
   const [search, setSearch] = useState("");
