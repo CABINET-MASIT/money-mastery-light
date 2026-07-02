@@ -186,6 +186,72 @@ export default function Settings() {
           </Tabs>
         </CardContent>
       </Card>
+
+      <Card className="shadow-card">
+        <CardHeader className="pb-3">
+          <CardTitle className="font-display flex items-center gap-2 text-lg">
+            <Database className="h-5 w-5 text-primary" /> Sauvegarde & Restauration
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Exportez toutes vos données (espaces, transactions, catégories, devises) dans un fichier JSON conservable hors ligne, puis restaurez-le à tout moment sur n'importe quel appareil.
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <Button onClick={handleExport} className="gradient-primary text-primary-foreground hover:opacity-90">
+              <Download className="h-4 w-4 mr-1.5" /> Exporter
+            </Button>
+            <Button variant="outline" onClick={() => fileRef.current?.click()}>
+              <Upload className="h-4 w-4 mr-1.5" /> Importer
+            </Button>
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={handleFilePick}
+          />
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Importer la sauvegarde ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Fichier : <strong>{pending?.fileName}</strong>. Choisissez comment appliquer les données.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setImportMode("merge")}
+              className={`w-full text-left rounded-xl border p-3 transition ${importMode === "merge" ? "border-primary bg-primary/5" : "border-border"}`}
+            >
+              <p className="text-sm font-semibold">Fusionner</p>
+              <p className="text-xs text-muted-foreground">Ajoute uniquement les éléments manquants. Vos données actuelles sont conservées.</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setImportMode("replace")}
+              className={`w-full text-left rounded-xl border p-3 transition ${importMode === "replace" ? "border-destructive bg-destructive/5" : "border-border"}`}
+            >
+              <p className="text-sm font-semibold text-destructive">Remplacer</p>
+              <p className="text-xs text-muted-foreground">Efface toutes les données locales et les remplace par celles du fichier.</p>
+            </button>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmImport}
+              className={importMode === "replace" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : "gradient-primary text-primary-foreground"}
+            >
+              {importMode === "replace" ? "Tout remplacer" : "Fusionner"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
