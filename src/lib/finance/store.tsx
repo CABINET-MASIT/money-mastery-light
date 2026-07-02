@@ -49,6 +49,20 @@ interface FinanceCtx {
   // Money
   currency: string;
   formatMoney: (n: number) => string;
+
+  // Backup
+  exportData: () => ExportPayload;
+  importData: (data: unknown, mode: "merge" | "replace") => { workspaces: number; transactions: number };
+}
+
+export interface ExportPayload {
+  app: "finpilot";
+  version: 1;
+  exportedAt: string;
+  workspaces: Workspace[];
+  transactions: Transaction[];
+  customCategories: CustomCategories;
+  settings: Settings;
 }
 
 const Ctx = createContext<FinanceCtx | null>(null);
