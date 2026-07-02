@@ -49,6 +49,20 @@ interface FinanceCtx {
   // Money
   currency: string;
   formatMoney: (n: number) => string;
+
+  // Backup
+  exportData: () => ExportPayload;
+  importData: (data: unknown, mode: "merge" | "replace") => { workspaces: number; transactions: number };
+}
+
+export interface ExportPayload {
+  app: "finpilot";
+  version: 1;
+  exportedAt: string;
+  workspaces: Workspace[];
+  transactions: Transaction[];
+  customCategories: CustomCategories;
+  settings: Settings;
 }
 
 const Ctx = createContext<FinanceCtx | null>(null);
@@ -194,6 +208,72 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
 
     currency: currentWorkspace.currency,
     formatMoney,
+
+    exportData: () => ({
+      app: "finpilot",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      workspaces,
+      transactions,
+      customCategories,
+      settings,
+    }),
+    importData: (raw, mode) => {
+      if (!raw || typeof raw !== "object") throw new Error("Fichier invalide");
+      const d = raw as Partial<ExportPayload>;
+      if (d.app !== "finpilot") throw new Error("Ce fichier ne provient pas de FinPilot");
+      if (!Array.isArray(d.workspaces) || !Array.isArray(d.transactions)) throw new Error("Structure invalide");
+
+      const inWs = d.workspaces as Workspace[];
+      const inTx = d.transactions as Transaction[];
+      const inCats = (d.customCategories ?? {}) as CustomCategories;
+
+      if (mode === "replace") {
+        setWorkspaces(inWs.length ? inWs : [defaultWorkspace()]);
+        setTransactions(inTx);
+        setCustomCategories(inCats);
+        const nextCurrent =
+          d.settings?.currentWorkspaceId && inWs.some((w) => w.id === d.settings!.currentWorkspaceId)
+            ? d.settings!.currentWorkspaceId
+            : inWs[0]?.id ?? DEFAULT_WORKSPACE_ID;
+        setSettings({ onboarded: true, currentWorkspaceId: nextCurrent });
+        return { workspaces: inWs.length, transactions: inTx.length };
+      }
+
+      // merge
+      let wsAdded = 0;
+      setWorkspaces((cur) => {
+        const ids = new Set(cur.map((w) => w.id));
+        const merged = [...cur];
+        for (const w of inWs) {
+          if (!ids.has(w.id)) { merged.push(w); wsAdded++; }
+        }
+        return merged;
+      });
+      let txAdded = 0;
+      setTransactions((cur) => {
+        const ids = new Set(cur.map((t) => t.id));
+        const merged = [...cur];
+        for (const t of inTx) {
+          if (!ids.has(t.id)) { merged.push(t); txAdded++; }
+        }
+        return merged;
+      });
+      setCustomCategories((cur) => {
+        const next = { ...cur };
+        for (const [wsId, cats] of Object.entries(inCats)) {
+          const existing = next[wsId] ?? { revenue: [], expense: [] };
+          const uniq = (a: string[], b: string[]) =>
+            [...a, ...b.filter((x) => !a.some((y) => y.toLowerCase() === x.toLowerCase()))];
+          next[wsId] = {
+            revenue: uniq(existing.revenue, cats.revenue ?? []),
+            expense: uniq(existing.expense, cats.expense ?? []),
+          };
+        }
+        return next;
+      });
+      return { workspaces: wsAdded, transactions: txAdded };
+    },
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

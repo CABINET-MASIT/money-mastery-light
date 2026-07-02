@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useFinance } from "@/lib/finance/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -7,14 +7,72 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { CURRENCIES, REVENUE_CATEGORIES, EXPENSE_CATEGORIES, TxType } from "@/lib/finance/types";
-import { Plus, X, Lock, Coins, Tags } from "lucide-react";
+import { Plus, X, Lock, Coins, Tags, Download, Upload, Database } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Settings() {
-  const { customCategories, addCategory, removeCategory, currentWorkspace, updateWorkspace } = useFinance();
+  const { customCategories, addCategory, removeCategory, currentWorkspace, updateWorkspace, exportData, importData } = useFinance();
   const [tab, setTab] = useState<TxType>("revenue");
   const [name, setName] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [pending, setPending] = useState<{ data: unknown; fileName: string } | null>(null);
+  const [importMode, setImportMode] = useState<"merge" | "replace">("merge");
+
+  const handleExport = () => {
+    try {
+      const payload = exportData();
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `finpilot-backup-${stamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("Sauvegarde exportée");
+    } catch {
+      toast.error("Échec de l'export");
+    }
+  };
+
+  const handleFilePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(String(reader.result));
+        setPending({ data, fileName: file.name });
+      } catch {
+        toast.error("Fichier JSON invalide");
+      }
+    };
+    reader.onerror = () => toast.error("Impossible de lire le fichier");
+    reader.readAsText(file);
+  };
+
+  const confirmImport = () => {
+    if (!pending) return;
+    try {
+      const res = importData(pending.data, importMode);
+      toast.success(
+        importMode === "replace"
+          ? "Données restaurées"
+          : `Import terminé : +${res.transactions} transactions, +${res.workspaces} espaces`
+      );
+      setPending(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Import impossible");
+    }
+  };
 
   const handleAdd = () => {
     const t = name.trim();
@@ -128,6 +186,72 @@ export default function Settings() {
           </Tabs>
         </CardContent>
       </Card>
+
+      <Card className="shadow-card">
+        <CardHeader className="pb-3">
+          <CardTitle className="font-display flex items-center gap-2 text-lg">
+            <Database className="h-5 w-5 text-primary" /> Sauvegarde & Restauration
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Exportez toutes vos données (espaces, transactions, catégories, devises) dans un fichier JSON conservable hors ligne, puis restaurez-le à tout moment sur n'importe quel appareil.
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <Button onClick={handleExport} className="gradient-primary text-primary-foreground hover:opacity-90">
+              <Download className="h-4 w-4 mr-1.5" /> Exporter
+            </Button>
+            <Button variant="outline" onClick={() => fileRef.current?.click()}>
+              <Upload className="h-4 w-4 mr-1.5" /> Importer
+            </Button>
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={handleFilePick}
+          />
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Importer la sauvegarde ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Fichier : <strong>{pending?.fileName}</strong>. Choisissez comment appliquer les données.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setImportMode("merge")}
+              className={`w-full text-left rounded-xl border p-3 transition ${importMode === "merge" ? "border-primary bg-primary/5" : "border-border"}`}
+            >
+              <p className="text-sm font-semibold">Fusionner</p>
+              <p className="text-xs text-muted-foreground">Ajoute uniquement les éléments manquants. Vos données actuelles sont conservées.</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setImportMode("replace")}
+              className={`w-full text-left rounded-xl border p-3 transition ${importMode === "replace" ? "border-destructive bg-destructive/5" : "border-border"}`}
+            >
+              <p className="text-sm font-semibold text-destructive">Remplacer</p>
+              <p className="text-xs text-muted-foreground">Efface toutes les données locales et les remplace par celles du fichier.</p>
+            </button>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmImport}
+              className={importMode === "replace" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : "gradient-primary text-primary-foreground"}
+            >
+              {importMode === "replace" ? "Tout remplacer" : "Fusionner"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
