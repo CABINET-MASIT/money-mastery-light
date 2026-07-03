@@ -1,23 +1,24 @@
 import { useNavigate } from "react-router-dom";
-import { TrendingUp, TrendingDown, PieChart, BarChart3, LayoutDashboard, Settings as SettingsIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, PieChart, BarChart3, Wallet, Settings as SettingsIcon } from "lucide-react";
 import { useFinance } from "@/lib/finance/store";
 import { useMemo } from "react";
+import logo from "@/assets/cmasit-logo.jpg";
 
 interface Tile {
   to: string;
   label: string;
   hint: string;
   icon: React.ElementType;
-  className: string;
+  tone: "primary" | "silver";
 }
 
 const tiles: Tile[] = [
-  { to: "/revenus", label: "Saisir un revenu", hint: "Encaissements & ventes", icon: TrendingUp, className: "gradient-revenue text-white" },
-  { to: "/depenses", label: "Saisir une dépense", hint: "Achats & charges", icon: TrendingDown, className: "gradient-expense text-white" },
-  { to: "/tableau-de-bord", label: "Tableau de bord", hint: "Totaux & solde", icon: LayoutDashboard, className: "gradient-balance text-white" },
-  { to: "/synthese/revenus", label: "Synthèse revenus", hint: "Par catégorie & %", icon: PieChart, className: "bg-card text-foreground border border-border" },
-  { to: "/synthese/depenses", label: "Synthèse dépenses", hint: "Par catégorie & %", icon: BarChart3, className: "bg-card text-foreground border border-border" },
-  { to: "/parametres", label: "Paramètres", hint: "Catégories & devises", icon: SettingsIcon, className: "bg-card text-foreground border border-border" },
+  { to: "/revenus", label: "Revenus", hint: "Saisie et liste", icon: TrendingUp, tone: "silver" },
+  { to: "/depenses", label: "Dépenses", hint: "Saisie et liste", icon: TrendingDown, tone: "silver" },
+  { to: "/tableau-de-bord", label: "Solde", hint: "Revenus et dépenses", icon: Wallet, tone: "silver" },
+  { to: "/synthese/revenus", label: "Synthèse", hint: "Revenus", icon: PieChart, tone: "primary" },
+  { to: "/synthese/depenses", label: "Synthèse", hint: "Dépenses", icon: BarChart3, tone: "primary" },
+  { to: "/parametres", label: "Paramètres", hint: "Catégories", icon: SettingsIcon, tone: "primary" },
 ];
 
 export default function Home() {
@@ -34,52 +35,73 @@ export default function Home() {
   const balance = rev - exp;
 
   return (
-    <div className="space-y-6 max-w-[800px] mx-auto">
-      <header className="text-center pt-2">
-        <p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">{currentWorkspace.name}</p>
-        <h1 className="font-display text-3xl font-bold tracking-tight mt-1">Bonjour 👋</h1>
-        <p className="text-muted-foreground text-sm mt-1">Que voulez-vous faire aujourd'hui ?</p>
-      </header>
+    <div className="-m-4 md:-m-8 -mb-24 md:-mb-8">
+      {/* Hero brand */}
+      <section className="relative gradient-hero px-6 pt-8 pb-10 rounded-b-[2.5rem] overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_20%_10%,white,transparent_40%)]" />
+        <div className="relative flex flex-col items-center">
+          <div className="h-24 w-24 rounded-full bg-white shadow-lg flex items-center justify-center overflow-hidden ring-4 ring-white/30">
+            <img src={logo} alt="Logo CMASIT" className="h-full w-full object-contain p-1" />
+          </div>
+          <h1 className="font-display text-4xl font-bold text-white mt-4 tracking-wide">My Money</h1>
+          <p className="mt-2 px-3 py-1 rounded-md bg-white text-primary text-xs font-semibold tracking-wide">
+            Gérer les revenus et dépenses
+          </p>
+        </div>
 
-      <div className="rounded-3xl gradient-primary p-5 text-primary-foreground shadow-glow">
-        <p className="text-xs uppercase tracking-wider opacity-80">Solde actuel</p>
-        <p className="font-display text-3xl font-bold mt-1 truncate">{formatMoney(balance)}</p>
-        <div className="flex items-center justify-between mt-4 text-xs">
-          <div>
-            <p className="opacity-75">Revenus</p>
-            <p className="font-semibold mt-0.5">{formatMoney(rev)}</p>
+        {/* Balance label — sticker */}
+        <div className="relative mt-6 mx-auto max-w-sm rounded-2xl bg-black/50 backdrop-blur-md border border-white/10 px-5 py-4 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-white/60">{currentWorkspace.name} • Solde</p>
+              <p className="font-display text-2xl font-bold text-white mt-1 truncate">{formatMoney(balance)}</p>
+            </div>
+            <span className="rounded-full bg-primary/90 text-primary-foreground text-[10px] font-bold px-2.5 py-1">
+              {currentWorkspace.currency}
+            </span>
           </div>
-          <div className="h-8 w-px bg-white/20" />
-          <div>
-            <p className="opacity-75">Dépenses</p>
-            <p className="font-semibold mt-0.5">{formatMoney(exp)}</p>
-          </div>
-          <div className="h-8 w-px bg-white/20" />
-          <div>
-            <p className="opacity-75">Devise</p>
-            <p className="font-semibold mt-0.5">{currentWorkspace.currency}</p>
+          <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+            <div className="rounded-lg bg-white/5 px-3 py-2">
+              <p className="text-white/60">Revenus</p>
+              <p className="text-white font-semibold mt-0.5 truncate">{formatMoney(rev)}</p>
+            </div>
+            <div className="rounded-lg bg-white/5 px-3 py-2">
+              <p className="text-white/60">Dépenses</p>
+              <p className="text-white font-semibold mt-0.5 truncate">{formatMoney(exp)}</p>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="grid grid-cols-2 gap-3">
-        {tiles.map((t) => (
-          <button
-            key={t.to}
-            onClick={() => nav(t.to)}
-            className={`group relative overflow-hidden rounded-3xl p-5 text-left aspect-square sm:aspect-[4/3] shadow-card transition-all active:scale-95 hover:-translate-y-0.5 ${t.className}`}
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-              <t.icon className="h-5 w-5" />
-            </div>
-            <div className="absolute bottom-4 left-5 right-5">
-              <p className="font-display text-base font-bold leading-tight">{t.label}</p>
-              <p className="text-xs opacity-75 mt-0.5">{t.hint}</p>
-            </div>
-            <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-          </button>
-        ))}
-      </div>
+      {/* App buttons grid */}
+      <section className="px-5 pt-8 pb-10 bg-background">
+        <div className="grid grid-cols-3 gap-x-4 gap-y-7 max-w-md mx-auto">
+          {tiles.map((t) => (
+            <button
+              key={t.to + t.label + t.hint}
+              onClick={() => nav(t.to)}
+              className="group flex flex-col items-center text-center focus:outline-none"
+            >
+              <span
+                className={`relative h-[68px] w-[68px] rounded-full flex items-center justify-center shadow-card transition-transform active:scale-90 group-hover:-translate-y-0.5 ${
+                  t.tone === "primary"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-gradient-to-br from-neutral-200 to-neutral-400 text-primary"
+                }`}
+              >
+                <t.icon className="h-7 w-7" strokeWidth={2.2} />
+                <span className="absolute inset-0 rounded-full ring-1 ring-white/10" />
+              </span>
+              <span className="mt-2 text-sm font-bold text-foreground leading-tight">{t.label}</span>
+              <span className="text-[11px] text-muted-foreground leading-tight">{t.hint}</span>
+            </button>
+          ))}
+        </div>
+
+        <p className="text-center text-[10px] tracking-[0.25em] text-muted-foreground/70 mt-10 font-semibold">
+          COPYRIGHT CMASIT · TEL 620 41 82 95
+        </p>
+      </section>
     </div>
   );
 }
