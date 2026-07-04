@@ -24,14 +24,10 @@ function isIos() {
   return /iphone|ipad|ipod/.test(ua);
 }
 
-export function InstallPrompt() {
-  const [open, setOpen] = useState(false);
-  const [deferred, setDeferred] = useState<BIPEvent | null>(null);
-  const [ios, setIos] = useState(false);
-
 function isAndroid() {
   return /android/i.test(window.navigator.userAgent);
 }
+
 
 export function InstallPrompt() {
   const [open, setOpen] = useState(false);
