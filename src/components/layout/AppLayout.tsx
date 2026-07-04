@@ -4,6 +4,7 @@ import { AppSidebar } from "./AppSidebar";
 import { MobileNav } from "./MobileNav";
 import { WorkspaceSwitcher } from "@/components/workspace/WorkspaceSwitcher";
 import { OnboardingDialog } from "@/components/onboarding/OnboardingDialog";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function AppLayout() {
@@ -35,6 +36,7 @@ export default function AppLayout() {
           {isMobile && <MobileNav />}
         </div>
         <OnboardingDialog />
+        <InstallPrompt />
       </div>
     </SidebarProvider>
   );
