@@ -24,14 +24,22 @@ function isIos() {
   return /iphone|ipad|ipod/.test(ua);
 }
 
+function isAndroid() {
+  return /android/i.test(window.navigator.userAgent);
+}
+
+
 export function InstallPrompt() {
   const [open, setOpen] = useState(false);
   const [deferred, setDeferred] = useState<BIPEvent | null>(null);
-  const [ios, setIos] = useState(false);
+  const [platform, setPlatform] = useState<"ios" | "android" | "other">("other");
 
   useEffect(() => {
     if (isStandalone()) return;
     if (localStorage.getItem(STORAGE_KEY) === "1") return;
+
+    if (isIos()) setPlatform("ios");
+    else if (isAndroid()) setPlatform("android");
 
     const onBIP = (e: Event) => {
       e.preventDefault();
@@ -40,17 +48,14 @@ export function InstallPrompt() {
     };
     window.addEventListener("beforeinstallprompt", onBIP);
 
-    // iOS fallback (no beforeinstallprompt)
-    if (isIos()) {
-      setIos(true);
-      const t = setTimeout(() => setOpen(true), 800);
-      return () => {
-        clearTimeout(t);
-        window.removeEventListener("beforeinstallprompt", onBIP);
-      };
-    }
+    // Show manual-instructions modal shortly after load if the native prompt
+    // hasn't fired (iOS never fires it; Android may not on repeat visits).
+    const t = setTimeout(() => setOpen(true), 1200);
 
-    return () => window.removeEventListener("beforeinstallprompt", onBIP);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("beforeinstallprompt", onBIP);
+    };
   }, []);
 
   const dismiss = (persist = true) => {
@@ -91,15 +96,23 @@ export function InstallPrompt() {
             <span>Lancement rapide depuis l'écran d'accueil, comme une vraie app.</span>
           </div>
 
-          {ios && !deferred && (
+          {!deferred && platform === "ios" && (
             <div className="rounded-lg border border-border p-3 text-xs text-muted-foreground space-y-1.5">
-              <p className="font-semibold text-foreground">Sur iPhone / iPad :</p>
+              <p className="font-semibold text-foreground">Sur iPhone / iPad (Safari) :</p>
               <p className="flex items-center gap-1.5">
-                1. Touchez <Share className="h-3.5 w-3.5 inline" /> <span className="font-medium">Partager</span> dans Safari.
+                1. Touchez <Share className="h-3.5 w-3.5 inline" /> <span className="font-medium">Partager</span>.
               </p>
               <p className="flex items-center gap-1.5">
                 2. Puis <Plus className="h-3.5 w-3.5 inline" /> <span className="font-medium">Sur l'écran d'accueil</span>.
               </p>
+            </div>
+          )}
+
+          {!deferred && platform === "android" && (
+            <div className="rounded-lg border border-border p-3 text-xs text-muted-foreground space-y-1.5">
+              <p className="font-semibold text-foreground">Sur Android (Chrome) :</p>
+              <p>1. Ouvrez le menu <span className="font-medium">⋮</span> en haut à droite.</p>
+              <p>2. Touchez <span className="font-medium">« Installer l'application »</span> ou <span className="font-medium">« Ajouter à l'écran d'accueil »</span>.</p>
             </div>
           )}
         </div>
@@ -110,11 +123,11 @@ export function InstallPrompt() {
             <Button className="gradient-primary text-primary-foreground" onClick={install}>
               <Download className="h-4 w-4 mr-1.5" /> Installer
             </Button>
-          ) : !ios ? (
+          ) : (
             <Button className="gradient-primary text-primary-foreground" onClick={() => dismiss(true)}>
               J'ai compris
             </Button>
-          ) : null}
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
