@@ -133,20 +133,6 @@ export function InstallPrompt() {
             </Button>
           )}
         </DialogFooter>
-        </div>
-
-        <DialogFooter className="flex-row gap-2 sm:justify-between">
-          <Button variant="ghost" onClick={() => dismiss(true)}>Plus tard</Button>
-          {deferred ? (
-            <Button className="gradient-primary text-primary-foreground" onClick={install}>
-              <Download className="h-4 w-4 mr-1.5" /> Installer
-            </Button>
-          ) : !ios ? (
-            <Button className="gradient-primary text-primary-foreground" onClick={() => dismiss(true)}>
-              J'ai compris
-            </Button>
-          ) : null}
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
