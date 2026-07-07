@@ -50,6 +50,18 @@ interface FinanceCtx {
   currency: string;
   formatMoney: (n: number) => string;
 
+  // Transfers between workspaces (creates 2 linked transactions)
+  transfer: (data: {
+    fromWorkspaceId: string;
+    toWorkspaceId: string;
+    amount: number;
+    date: string;
+    description?: string;
+  }) => void;
+
+  // Danger zone
+  resetAll: () => void;
+
   // Backup
   exportData: () => ExportPayload;
   importData: (data: unknown, mode: "merge" | "replace") => { workspaces: number; transactions: number };
@@ -209,6 +221,30 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     currency: currentWorkspace.currency,
     formatMoney,
 
+    transfer: ({ fromWorkspaceId, toWorkspaceId, amount, date, description }) => {
+      if (fromWorkspaceId === toWorkspaceId) throw new Error("Espaces identiques");
+      if (!(amount > 0)) throw new Error("Montant invalide");
+      const fromWs = workspaces.find((w) => w.id === fromWorkspaceId);
+      const toWs = workspaces.find((w) => w.id === toWorkspaceId);
+      if (!fromWs || !toWs) throw new Error("Espace introuvable");
+      const id1 = uid("tx"), id2 = uid("tx");
+      const label = description?.trim() || `Transfert ${fromWs.name} → ${toWs.name}`;
+      setTransactions((cur) => [
+        { id: id1, workspaceId: fromWorkspaceId, type: "expense", date, amount, category: "Transfert émis", description: label, reference: id2 },
+        { id: id2, workspaceId: toWorkspaceId, type: "revenue", date, amount, category: "Transfert reçu", description: label, reference: id1 },
+        ...cur,
+      ]);
+    },
+
+    resetAll: () => {
+      const fresh = defaultWorkspace();
+      setWorkspaces([fresh]);
+      setTransactions([]);
+      setCustomCategories({});
+      setSettings({ onboarded: false, currentWorkspaceId: fresh.id });
+    },
+
+
     exportData: () => ({
       app: "finpilot",
       version: 1,
@@ -221,7 +257,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     importData: (raw, mode) => {
       if (!raw || typeof raw !== "object") throw new Error("Fichier invalide");
       const d = raw as Partial<ExportPayload>;
-      if (d.app !== "finpilot") throw new Error("Ce fichier ne provient pas de FinPilot");
+      if (d.app !== "finpilot") throw new Error("Ce fichier ne provient pas de FinancePilote");
       if (!Array.isArray(d.workspaces) || !Array.isArray(d.transactions)) throw new Error("Structure invalide");
 
       const inWs = d.workspaces as Workspace[];

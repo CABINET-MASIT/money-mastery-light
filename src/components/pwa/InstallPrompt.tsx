@@ -151,7 +151,7 @@ export function InstallPrompt() {
             <img src={logo} alt="CMASIT" className="h-full w-full object-contain p-1" />
           </div>
           <DialogTitle className="font-display text-xl text-center">
-            {phase === "installed" ? "Installation terminée" : "Installer My Money"}
+            {phase === "installed" ? "Installation terminée" : "Installer FinancePilote"}
           </DialogTitle>
           <DialogDescription className="text-center">
             {phase === "installed"

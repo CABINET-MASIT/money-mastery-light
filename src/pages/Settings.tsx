@@ -12,16 +12,43 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { CURRENCIES, REVENUE_CATEGORIES, EXPENSE_CATEGORIES, TxType } from "@/lib/finance/types";
-import { Plus, X, Lock, Coins, Tags, Download, Upload, Database } from "lucide-react";
+import { Plus, X, Lock, Coins, Tags, Download, Upload, Database, Image as ImageIcon, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import defaultLogo from "@/assets/cmasit-logo.jpg";
+import { BackButton } from "@/components/layout/BackButton";
 
 export default function Settings() {
-  const { customCategories, addCategory, removeCategory, currentWorkspace, updateWorkspace, exportData, importData } = useFinance();
+  const { customCategories, addCategory, removeCategory, currentWorkspace, updateWorkspace, exportData, importData, resetAll } = useFinance();
   const [tab, setTab] = useState<TxType>("revenue");
   const [name, setName] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const logoRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<{ data: unknown; fileName: string } | null>(null);
   const [importMode, setImportMode] = useState<"merge" | "replace">("merge");
+  const [confirmReset, setConfirmReset] = useState(false);
+
+  const currentLogo = currentWorkspace.logo || defaultLogo;
+
+  const handleLogoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Fichier image requis"); return; }
+    if (file.size > 800_000) { toast.error("Image trop lourde (max 800 Ko)"); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      updateWorkspace(currentWorkspace.id, { logo: String(reader.result) });
+      toast.success("Logo mis à jour");
+    };
+    reader.onerror = () => toast.error("Lecture impossible");
+    reader.readAsDataURL(file);
+  };
+
+  const resetLogo = () => {
+    updateWorkspace(currentWorkspace.id, { logo: undefined });
+    toast.success("Logo par défaut restauré");
+  };
+
 
   const handleExport = () => {
     try {
@@ -31,7 +58,7 @@ export default function Settings() {
       const a = document.createElement("a");
       const stamp = new Date().toISOString().slice(0, 10);
       a.href = url;
-      a.download = `finpilot-backup-${stamp}.json`;
+      a.download = `financepilote-backup-${stamp}.json`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -138,11 +165,57 @@ export default function Settings() {
 
   return (
     <div className="space-y-5 max-w-[800px] mx-auto">
+      <BackButton to="/" />
       <header>
         <p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">Paramètres</p>
         <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight mt-1">Configuration</h1>
-        <p className="text-muted-foreground text-sm mt-1">Catégories et devise pour <strong>{currentWorkspace.name}</strong></p>
+        <p className="text-muted-foreground text-sm mt-1">Catégories, devise et logo pour <strong>{currentWorkspace.name}</strong></p>
       </header>
+
+      <Card className="shadow-card">
+        <CardHeader className="pb-3">
+          <CardTitle className="font-display flex items-center gap-2 text-lg">
+            <ImageIcon className="h-5 w-5 text-primary" /> Logo de l'espace
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center gap-4">
+            <div className="h-16 w-16 rounded-xl bg-white border border-border shadow-sm flex items-center justify-center overflow-hidden shrink-0">
+              <img src={currentLogo} alt="Logo actuel" className="h-full w-full object-contain p-1" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{currentWorkspace.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {currentWorkspace.logo ? "Logo personnalisé" : "Logo CMASIT par défaut"}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" onClick={() => logoRef.current?.click()}>
+              <Upload className="h-4 w-4 mr-1.5" /> Changer
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={resetLogo}
+              disabled={!currentWorkspace.logo}
+              className="text-muted-foreground"
+            >
+              <Trash2 className="h-4 w-4 mr-1.5" /> Défaut
+            </Button>
+          </div>
+          <input
+            ref={logoRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            className="hidden"
+            onChange={handleLogoPick}
+          />
+          <p className="text-xs text-muted-foreground">
+            PNG, JPG, WEBP ou SVG · max 800 Ko · s'affiche à l'accueil et sur les PDF.
+          </p>
+        </CardContent>
+      </Card>
+
 
       <Card className="shadow-card">
         <CardHeader className="pb-3">
@@ -248,6 +321,42 @@ export default function Settings() {
               className={importMode === "replace" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : "gradient-primary text-primary-foreground"}
             >
               {importMode === "replace" ? "Tout remplacer" : "Fusionner"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Card className="shadow-card border-destructive/40">
+        <CardHeader className="pb-3">
+          <CardTitle className="font-display flex items-center gap-2 text-lg text-destructive">
+            <AlertTriangle className="h-5 w-5" /> Zone dangereuse
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Réinitialise <strong>toutes</strong> vos données : espaces, transactions, catégories personnalisées et paramètres. Pensez à exporter une sauvegarde avant.
+          </p>
+          <Button variant="destructive" className="w-full" onClick={() => setConfirmReset(true)}>
+            <Trash2 className="h-4 w-4 mr-1.5" /> Réinitialiser toutes les données
+          </Button>
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={confirmReset} onOpenChange={setConfirmReset}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Réinitialiser toutes les données ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est <strong>définitive</strong>. Toutes vos transactions, espaces et paramètres seront effacés. Cette opération ne peut pas être annulée.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => { resetAll(); setConfirmReset(false); toast.success("Données réinitialisées"); }}
+            >
+              Tout effacer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

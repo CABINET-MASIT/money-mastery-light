@@ -1,11 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { TrendingUp, TrendingDown, PieChart, BarChart3, Wallet, Settings as SettingsIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, PieChart, BarChart3, Wallet, Settings as SettingsIcon, ArrowRightLeft } from "lucide-react";
 import { useFinance } from "@/lib/finance/store";
-import { useMemo } from "react";
-import logo from "@/assets/cmasit-logo.jpg";
+import { useMemo, useState } from "react";
+import defaultLogo from "@/assets/cmasit-logo.jpg";
+import { TransferDialog } from "@/components/finance/TransferDialog";
 
 interface Tile {
-  to: string;
+  key: string;
+  action: "nav" | "transfer";
+  to?: string;
   label: string;
   hint: string;
   icon: React.ElementType;
@@ -13,17 +16,21 @@ interface Tile {
 }
 
 const tiles: Tile[] = [
-  { to: "/revenus", label: "Revenus", hint: "Saisie et liste", icon: TrendingUp, tone: "silver" },
-  { to: "/depenses", label: "Dépenses", hint: "Saisie et liste", icon: TrendingDown, tone: "silver" },
-  { to: "/tableau-de-bord", label: "Solde", hint: "Revenus et dépenses", icon: Wallet, tone: "silver" },
-  { to: "/synthese/revenus", label: "Synthèse", hint: "Revenus", icon: PieChart, tone: "primary" },
-  { to: "/synthese/depenses", label: "Synthèse", hint: "Dépenses", icon: BarChart3, tone: "primary" },
-  { to: "/parametres", label: "Paramètres", hint: "Catégories", icon: SettingsIcon, tone: "primary" },
+  { key: "rev", action: "nav", to: "/revenus", label: "Revenus", hint: "Saisie et liste", icon: TrendingUp, tone: "silver" },
+  { key: "exp", action: "nav", to: "/depenses", label: "Dépenses", hint: "Saisie et liste", icon: TrendingDown, tone: "silver" },
+  { key: "bal", action: "nav", to: "/tableau-de-bord", label: "Solde", hint: "Revenus et dépenses", icon: Wallet, tone: "silver" },
+  { key: "trf", action: "transfer", label: "Transfert", hint: "Entre espaces", icon: ArrowRightLeft, tone: "primary" },
+  { key: "syn-r", action: "nav", to: "/synthese/revenus", label: "Synthèse", hint: "Revenus", icon: PieChart, tone: "primary" },
+  { key: "syn-e", action: "nav", to: "/synthese/depenses", label: "Synthèse", hint: "Dépenses", icon: BarChart3, tone: "primary" },
+  { key: "set", action: "nav", to: "/parametres", label: "Paramètres", hint: "Catégories", icon: SettingsIcon, tone: "primary" },
 ];
 
 export default function Home() {
   const nav = useNavigate();
   const { transactions, formatMoney, currentWorkspace } = useFinance();
+  const [transferOpen, setTransferOpen] = useState(false);
+
+  const logoSrc = currentWorkspace.logo || defaultLogo;
 
   const { rev, exp } = useMemo(() => {
     let rev = 0, exp = 0;
@@ -34,6 +41,11 @@ export default function Home() {
   }, [transactions]);
   const balance = rev - exp;
 
+  const handleTile = (t: Tile) => {
+    if (t.action === "transfer") setTransferOpen(true);
+    else if (t.to) nav(t.to);
+  };
+
   return (
     <div className="-m-4 md:-m-8 -mb-24 md:-mb-8">
       {/* Hero brand */}
@@ -41,9 +53,9 @@ export default function Home() {
         <div className="pointer-events-none absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_20%_10%,white,transparent_40%)]" />
         <div className="relative flex flex-col items-center">
           <div className="h-24 w-24 rounded-full bg-white shadow-lg flex items-center justify-center overflow-hidden ring-4 ring-white/30">
-            <img src={logo} alt="Logo CMASIT" className="h-full w-full object-contain p-1" />
+            <img src={logoSrc} alt={`Logo ${currentWorkspace.name}`} className="h-full w-full object-contain p-1" />
           </div>
-          <h1 className="font-display text-4xl font-bold text-white mt-4 tracking-wide">My Money</h1>
+          <h1 className="font-display text-4xl font-bold text-white mt-4 tracking-wide">FinancePilote</h1>
           <p className="mt-2 px-3 py-1 rounded-md bg-white text-primary text-xs font-semibold tracking-wide">
             Gérer les revenus et dépenses
           </p>
@@ -78,8 +90,8 @@ export default function Home() {
         <div className="grid grid-cols-3 gap-x-4 gap-y-7 max-w-md mx-auto">
           {tiles.map((t) => (
             <button
-              key={t.to + t.label + t.hint}
-              onClick={() => nav(t.to)}
+              key={t.key}
+              onClick={() => handleTile(t)}
               className="group flex flex-col items-center text-center focus:outline-none"
             >
               <span
@@ -102,6 +114,8 @@ export default function Home() {
           COPYRIGHT CMASIT · TEL 620 41 82 95
         </p>
       </section>
+
+      <TransferDialog open={transferOpen} onOpenChange={setTransferOpen} />
     </div>
   );
 }

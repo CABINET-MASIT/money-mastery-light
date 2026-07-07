@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 import { TxType } from "@/lib/finance/types";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { BackButton } from "@/components/layout/BackButton";
 
 const COLORS_REV = ["hsl(160 84% 39%)", "hsl(173 80% 40%)", "hsl(199 89% 48%)", "hsl(217 91% 60%)", "hsl(142 71% 45%)", "hsl(188 86% 53%)", "hsl(220 70% 50%)"];
 const COLORS_EXP = ["hsl(0 84% 60%)", "hsl(20 90% 55%)", "hsl(38 92% 50%)", "hsl(340 82% 52%)", "hsl(280 65% 60%)", "hsl(15 80% 50%)", "hsl(45 90% 55%)", "hsl(355 75% 55%)", "hsl(25 85% 50%)", "hsl(310 70% 55%)"];
@@ -31,6 +32,7 @@ export default function Synthesis({ type }: Props) {
 
   return (
     <div className="space-y-5 max-w-[900px] mx-auto">
+      <BackButton to="/" />
       <header>
         <p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">Synthèse</p>
         <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight mt-1 flex items-center gap-2">

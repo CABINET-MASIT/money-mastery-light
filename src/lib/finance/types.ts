@@ -8,6 +8,7 @@ export interface Workspace {
   currency: string; // ISO code or custom
   color: string; // tailwind hue token (e.g. "violet")
   createdAt: string;
+  logo?: string; // base64 data URL - custom workspace logo (falls back to CMASIT)
 }
 
 export interface Transaction {
@@ -30,6 +31,7 @@ export const REVENUE_CATEGORIES = [
   "Commission",
   "Intérêts",
   "Revenus exceptionnels",
+  "Transfert reçu",
   "Autres revenus",
 ] as const;
 
@@ -44,6 +46,7 @@ export const EXPENSE_CATEGORIES = [
   "Marketing",
   "Impôts et taxes",
   "Maintenance",
+  "Transfert émis",
   "Autres dépenses",
 ] as const;
 
