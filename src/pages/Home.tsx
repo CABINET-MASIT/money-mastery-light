@@ -1,11 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { TrendingUp, TrendingDown, PieChart, BarChart3, Wallet, Settings as SettingsIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, PieChart, BarChart3, Wallet, Settings as SettingsIcon, ArrowRightLeft } from "lucide-react";
 import { useFinance } from "@/lib/finance/store";
-import { useMemo } from "react";
-import logo from "@/assets/cmasit-logo.jpg";
+import { useMemo, useState } from "react";
+import defaultLogo from "@/assets/cmasit-logo.jpg";
+import { TransferDialog } from "@/components/finance/TransferDialog";
 
 interface Tile {
-  to: string;
+  key: string;
+  action: "nav" | "transfer";
+  to?: string;
   label: string;
   hint: string;
   icon: React.ElementType;
@@ -13,12 +16,13 @@ interface Tile {
 }
 
 const tiles: Tile[] = [
-  { to: "/revenus", label: "Revenus", hint: "Saisie et liste", icon: TrendingUp, tone: "silver" },
-  { to: "/depenses", label: "Dépenses", hint: "Saisie et liste", icon: TrendingDown, tone: "silver" },
-  { to: "/tableau-de-bord", label: "Solde", hint: "Revenus et dépenses", icon: Wallet, tone: "silver" },
-  { to: "/synthese/revenus", label: "Synthèse", hint: "Revenus", icon: PieChart, tone: "primary" },
-  { to: "/synthese/depenses", label: "Synthèse", hint: "Dépenses", icon: BarChart3, tone: "primary" },
-  { to: "/parametres", label: "Paramètres", hint: "Catégories", icon: SettingsIcon, tone: "primary" },
+  { key: "rev", action: "nav", to: "/revenus", label: "Revenus", hint: "Saisie et liste", icon: TrendingUp, tone: "silver" },
+  { key: "exp", action: "nav", to: "/depenses", label: "Dépenses", hint: "Saisie et liste", icon: TrendingDown, tone: "silver" },
+  { key: "bal", action: "nav", to: "/tableau-de-bord", label: "Solde", hint: "Revenus et dépenses", icon: Wallet, tone: "silver" },
+  { key: "trf", action: "transfer", label: "Transfert", hint: "Entre espaces", icon: ArrowRightLeft, tone: "primary" },
+  { key: "syn-r", action: "nav", to: "/synthese/revenus", label: "Synthèse", hint: "Revenus", icon: PieChart, tone: "primary" },
+  { key: "syn-e", action: "nav", to: "/synthese/depenses", label: "Synthèse", hint: "Dépenses", icon: BarChart3, tone: "primary" },
+  { key: "set", action: "nav", to: "/parametres", label: "Paramètres", hint: "Catégories", icon: SettingsIcon, tone: "primary" },
 ];
 
 export default function Home() {
