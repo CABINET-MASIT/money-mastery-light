@@ -28,6 +28,9 @@ const tiles: Tile[] = [
 export default function Home() {
   const nav = useNavigate();
   const { transactions, formatMoney, currentWorkspace } = useFinance();
+  const [transferOpen, setTransferOpen] = useState(false);
+
+  const logoSrc = currentWorkspace.logo || defaultLogo;
 
   const { rev, exp } = useMemo(() => {
     let rev = 0, exp = 0;
@@ -38,6 +41,11 @@ export default function Home() {
   }, [transactions]);
   const balance = rev - exp;
 
+  const handleTile = (t: Tile) => {
+    if (t.action === "transfer") setTransferOpen(true);
+    else if (t.to) nav(t.to);
+  };
+
   return (
     <div className="-m-4 md:-m-8 -mb-24 md:-mb-8">
       {/* Hero brand */}
@@ -45,7 +53,7 @@ export default function Home() {
         <div className="pointer-events-none absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_20%_10%,white,transparent_40%)]" />
         <div className="relative flex flex-col items-center">
           <div className="h-24 w-24 rounded-full bg-white shadow-lg flex items-center justify-center overflow-hidden ring-4 ring-white/30">
-            <img src={logo} alt="Logo CMASIT" className="h-full w-full object-contain p-1" />
+            <img src={logoSrc} alt={`Logo ${currentWorkspace.name}`} className="h-full w-full object-contain p-1" />
           </div>
           <h1 className="font-display text-4xl font-bold text-white mt-4 tracking-wide">FinancePilote</h1>
           <p className="mt-2 px-3 py-1 rounded-md bg-white text-primary text-xs font-semibold tracking-wide">
@@ -82,8 +90,8 @@ export default function Home() {
         <div className="grid grid-cols-3 gap-x-4 gap-y-7 max-w-md mx-auto">
           {tiles.map((t) => (
             <button
-              key={t.to + t.label + t.hint}
-              onClick={() => nav(t.to)}
+              key={t.key}
+              onClick={() => handleTile(t)}
               className="group flex flex-col items-center text-center focus:outline-none"
             >
               <span
@@ -106,6 +114,8 @@ export default function Home() {
           COPYRIGHT CMASIT · TEL 620 41 82 95
         </p>
       </section>
+
+      <TransferDialog open={transferOpen} onOpenChange={setTransferOpen} />
     </div>
   );
 }
