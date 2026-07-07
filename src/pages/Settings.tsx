@@ -31,7 +31,7 @@ export default function Settings() {
       const a = document.createElement("a");
       const stamp = new Date().toISOString().slice(0, 10);
       a.href = url;
-      a.download = `finpilot-backup-${stamp}.json`;
+      a.download = `financepilote-backup-${stamp}.json`;
       document.body.appendChild(a);
       a.click();
       a.remove();

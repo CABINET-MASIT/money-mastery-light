@@ -43,7 +43,7 @@ export default function Home() {
           <div className="h-24 w-24 rounded-full bg-white shadow-lg flex items-center justify-center overflow-hidden ring-4 ring-white/30">
             <img src={logo} alt="Logo CMASIT" className="h-full w-full object-contain p-1" />
           </div>
-          <h1 className="font-display text-4xl font-bold text-white mt-4 tracking-wide">My Money</h1>
+          <h1 className="font-display text-4xl font-bold text-white mt-4 tracking-wide">FinancePilote</h1>
           <p className="mt-2 px-3 py-1 rounded-md bg-white text-primary text-xs font-semibold tracking-wide">
             Gérer les revenus et dépenses
           </p>

@@ -37,7 +37,7 @@ export function OnboardingDialog() {
             <Wallet className="h-7 w-7 text-primary-foreground" />
           </div>
           <DialogTitle className="font-display text-2xl text-center">
-            {step === 0 ? "Bienvenue dans FinPilot" : "Choisissez votre devise"}
+            {step === 0 ? "Bienvenue dans FinancePilote" : "Choisissez votre devise"}
           </DialogTitle>
           <DialogDescription className="text-center">
             {step === 0

@@ -221,7 +221,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     importData: (raw, mode) => {
       if (!raw || typeof raw !== "object") throw new Error("Fichier invalide");
       const d = raw as Partial<ExportPayload>;
-      if (d.app !== "finpilot") throw new Error("Ce fichier ne provient pas de FinPilot");
+      if (d.app !== "finpilot") throw new Error("Ce fichier ne provient pas de FinancePilote");
       if (!Array.isArray(d.workspaces) || !Array.isArray(d.transactions)) throw new Error("Structure invalide");
 
       const inWs = d.workspaces as Workspace[];
