@@ -165,11 +165,57 @@ export default function Settings() {
 
   return (
     <div className="space-y-5 max-w-[800px] mx-auto">
+      <BackButton to="/" />
       <header>
         <p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">Paramètres</p>
         <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight mt-1">Configuration</h1>
-        <p className="text-muted-foreground text-sm mt-1">Catégories et devise pour <strong>{currentWorkspace.name}</strong></p>
+        <p className="text-muted-foreground text-sm mt-1">Catégories, devise et logo pour <strong>{currentWorkspace.name}</strong></p>
       </header>
+
+      <Card className="shadow-card">
+        <CardHeader className="pb-3">
+          <CardTitle className="font-display flex items-center gap-2 text-lg">
+            <ImageIcon className="h-5 w-5 text-primary" /> Logo de l'espace
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center gap-4">
+            <div className="h-16 w-16 rounded-xl bg-white border border-border shadow-sm flex items-center justify-center overflow-hidden shrink-0">
+              <img src={currentLogo} alt="Logo actuel" className="h-full w-full object-contain p-1" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{currentWorkspace.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {currentWorkspace.logo ? "Logo personnalisé" : "Logo CMASIT par défaut"}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" onClick={() => logoRef.current?.click()}>
+              <Upload className="h-4 w-4 mr-1.5" /> Changer
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={resetLogo}
+              disabled={!currentWorkspace.logo}
+              className="text-muted-foreground"
+            >
+              <Trash2 className="h-4 w-4 mr-1.5" /> Défaut
+            </Button>
+          </div>
+          <input
+            ref={logoRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            className="hidden"
+            onChange={handleLogoPick}
+          />
+          <p className="text-xs text-muted-foreground">
+            PNG, JPG, WEBP ou SVG · max 800 Ko · s'affiche à l'accueil et sur les PDF.
+          </p>
+        </CardContent>
+      </Card>
+
 
       <Card className="shadow-card">
         <CardHeader className="pb-3">
