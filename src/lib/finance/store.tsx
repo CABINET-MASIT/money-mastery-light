@@ -50,6 +50,18 @@ interface FinanceCtx {
   currency: string;
   formatMoney: (n: number) => string;
 
+  // Transfers between workspaces (creates 2 linked transactions)
+  transfer: (data: {
+    fromWorkspaceId: string;
+    toWorkspaceId: string;
+    amount: number;
+    date: string;
+    description?: string;
+  }) => void;
+
+  // Danger zone
+  resetAll: () => void;
+
   // Backup
   exportData: () => ExportPayload;
   importData: (data: unknown, mode: "merge" | "replace") => { workspaces: number; transactions: number };
