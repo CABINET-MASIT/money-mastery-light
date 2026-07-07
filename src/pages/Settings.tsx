@@ -18,12 +18,37 @@ import defaultLogo from "@/assets/cmasit-logo.jpg";
 import { BackButton } from "@/components/layout/BackButton";
 
 export default function Settings() {
-  const { customCategories, addCategory, removeCategory, currentWorkspace, updateWorkspace, exportData, importData } = useFinance();
+  const { customCategories, addCategory, removeCategory, currentWorkspace, updateWorkspace, exportData, importData, resetAll } = useFinance();
   const [tab, setTab] = useState<TxType>("revenue");
   const [name, setName] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const logoRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<{ data: unknown; fileName: string } | null>(null);
   const [importMode, setImportMode] = useState<"merge" | "replace">("merge");
+  const [confirmReset, setConfirmReset] = useState(false);
+
+  const currentLogo = currentWorkspace.logo || defaultLogo;
+
+  const handleLogoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Fichier image requis"); return; }
+    if (file.size > 800_000) { toast.error("Image trop lourde (max 800 Ko)"); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      updateWorkspace(currentWorkspace.id, { logo: String(reader.result) });
+      toast.success("Logo mis à jour");
+    };
+    reader.onerror = () => toast.error("Lecture impossible");
+    reader.readAsDataURL(file);
+  };
+
+  const resetLogo = () => {
+    updateWorkspace(currentWorkspace.id, { logo: undefined });
+    toast.success("Logo par défaut restauré");
+  };
+
 
   const handleExport = () => {
     try {
