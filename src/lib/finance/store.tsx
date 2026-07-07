@@ -221,6 +221,30 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     currency: currentWorkspace.currency,
     formatMoney,
 
+    transfer: ({ fromWorkspaceId, toWorkspaceId, amount, date, description }) => {
+      if (fromWorkspaceId === toWorkspaceId) throw new Error("Espaces identiques");
+      if (!(amount > 0)) throw new Error("Montant invalide");
+      const fromWs = workspaces.find((w) => w.id === fromWorkspaceId);
+      const toWs = workspaces.find((w) => w.id === toWorkspaceId);
+      if (!fromWs || !toWs) throw new Error("Espace introuvable");
+      const id1 = uid("tx"), id2 = uid("tx");
+      const label = description?.trim() || `Transfert ${fromWs.name} → ${toWs.name}`;
+      setTransactions((cur) => [
+        { id: id1, workspaceId: fromWorkspaceId, type: "expense", date, amount, category: "Transfert émis", description: label, reference: id2 },
+        { id: id2, workspaceId: toWorkspaceId, type: "revenue", date, amount, category: "Transfert reçu", description: label, reference: id1 },
+        ...cur,
+      ]);
+    },
+
+    resetAll: () => {
+      const fresh = defaultWorkspace();
+      setWorkspaces([fresh]);
+      setTransactions([]);
+      setCustomCategories({});
+      setSettings({ onboarded: false, currentWorkspaceId: fresh.id });
+    },
+
+
     exportData: () => ({
       app: "finpilot",
       version: 1,
