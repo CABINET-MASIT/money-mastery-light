@@ -12,8 +12,10 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { CURRENCIES, REVENUE_CATEGORIES, EXPENSE_CATEGORIES, TxType } from "@/lib/finance/types";
-import { Plus, X, Lock, Coins, Tags, Download, Upload, Database } from "lucide-react";
+import { Plus, X, Lock, Coins, Tags, Download, Upload, Database, Image as ImageIcon, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import defaultLogo from "@/assets/cmasit-logo.jpg";
+import { BackButton } from "@/components/layout/BackButton";
 
 export default function Settings() {
   const { customCategories, addCategory, removeCategory, currentWorkspace, updateWorkspace, exportData, importData } = useFinance();
