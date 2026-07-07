@@ -325,6 +325,42 @@ export default function Settings() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Card className="shadow-card border-destructive/40">
+        <CardHeader className="pb-3">
+          <CardTitle className="font-display flex items-center gap-2 text-lg text-destructive">
+            <AlertTriangle className="h-5 w-5" /> Zone dangereuse
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Réinitialise <strong>toutes</strong> vos données : espaces, transactions, catégories personnalisées et paramètres. Pensez à exporter une sauvegarde avant.
+          </p>
+          <Button variant="destructive" className="w-full" onClick={() => setConfirmReset(true)}>
+            <Trash2 className="h-4 w-4 mr-1.5" /> Réinitialiser toutes les données
+          </Button>
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={confirmReset} onOpenChange={setConfirmReset}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Réinitialiser toutes les données ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est <strong>définitive</strong>. Toutes vos transactions, espaces et paramètres seront effacés. Cette opération ne peut pas être annulée.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => { resetAll(); setConfirmReset(false); toast.success("Données réinitialisées"); }}
+            >
+              Tout effacer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
