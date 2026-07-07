@@ -75,19 +75,33 @@ export function TransactionList({ type }: Props) {
   const exportPdf = () => {
     if (list.length === 0) { toast.error("Aucune donnée à exporter"); return; }
     const doc = new jsPDF({ unit: "pt", format: "a4" });
+
+    // Header brand strip with workspace logo (custom or default CMASIT)
+    const logoSrc = currentWorkspace.logo || "/favicon.png";
+    let textX = 40;
+    try {
+      const fmt = logoSrc.startsWith("data:image/png") || logoSrc.endsWith(".png") ? "PNG"
+        : logoSrc.startsWith("data:image/jpeg") || logoSrc.startsWith("data:image/jpg") || logoSrc.endsWith(".jpg") || logoSrc.endsWith(".jpeg") ? "JPEG"
+        : logoSrc.startsWith("data:image/webp") ? "WEBP"
+        : "PNG";
+      doc.addImage(logoSrc, fmt, 40, 30, 40, 40);
+      textX = 92;
+    } catch { /* ignore image errors */ }
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text(isExpense ? "État des dépenses" : "État des revenus", 40, 46);
+    doc.text(isExpense ? "État des dépenses" : "État des revenus", textX, 46);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(90);
-    doc.text(`Espace : ${currentWorkspace.name}`, 40, 64);
-    doc.text(`Période : ${range.label}`, 40, 78);
-    if (categoryFilter !== "all") doc.text(`Catégorie : ${categoryFilter}`, 40, 92);
-    doc.text(`Édité le ${format(new Date(), "dd/MM/yyyy à HH:mm", { locale: fr })}`, 40, categoryFilter !== "all" ? 106 : 92);
+    doc.text(`Espace : ${currentWorkspace.name}`, textX, 62);
+    doc.text(`Période : ${range.label}`, textX, 74);
+    let cursor = 86;
+    if (categoryFilter !== "all") { doc.text(`Catégorie : ${categoryFilter}`, textX, cursor); cursor += 12; }
+    doc.text(`Édité le ${format(new Date(), "dd/MM/yyyy à HH:mm", { locale: fr })}`, textX, cursor);
 
     autoTable(doc, {
-      startY: categoryFilter !== "all" ? 122 : 108,
+      startY: Math.max(cursor + 14, 92),
       head: [["Date", "Libellé", "Catégorie", "Montant"]],
       body: list.map((t) => [
         format(parseISO(t.date), "dd/MM/yyyy"),
