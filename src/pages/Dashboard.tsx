@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, AreaChart, Area } from "recharts";
+import { BackButton } from "@/components/layout/BackButton";
 
 export default function Dashboard() {
   const { transactions, formatMoney, currentWorkspace } = useFinance();
