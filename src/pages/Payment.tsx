@@ -32,14 +32,13 @@ export default function Payment() {
     };
   }, []);
 
-  // Handle return from Lengo Pay
+  // Handle return from Lengo Pay (if user lands directly on /paiement)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const status = params.get("paiement");
     if (status === "succes") {
       activateSubscription();
-      toast({ title: "Paiement confirmé", description: "Votre abonnement est actif pour 1 an." });
-      // Clean URL
+      toast({ title: "Paiement confirmé", description: "Votre abonnement est actif pour 8 heures." });
       const url = new URL(window.location.href);
       url.searchParams.delete("paiement");
       window.history.replaceState({}, "", url.toString());
@@ -63,9 +62,9 @@ export default function Payment() {
           amount: PRICE_GNF,
           currency: "GNF",
           country: "GN",
-          return_url: `${origin}/paiement?paiement=succes`,
-          callback_url: `${origin}/paiement?paiement=callback`,
-          failure_url: `${origin}/paiement?paiement=echec`,
+          return_url: `${origin}/?paiement=succes`,
+          callback_url: `${origin}/?paiement=callback`,
+          failure_url: `${origin}/?paiement=echec`,
         },
       });
 
@@ -130,7 +129,7 @@ export default function Payment() {
 
         <div className="flex items-baseline gap-2">
           <span className="font-display text-4xl font-bold text-primary">{priceLabel}</span>
-          <span className="text-sm text-muted-foreground">/ an</span>
+          <span className="text-sm text-muted-foreground">/ 8 heures</span>
         </div>
 
         <ul className="space-y-2 text-sm">
@@ -149,9 +148,14 @@ export default function Payment() {
         </ul>
 
         {!online && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 text-destructive text-sm">
-            <WifiOff className="h-4 w-4" />
-            <span>Vous êtes hors ligne. Connectez-vous pour payer.</span>
+          <div className="flex items-start gap-2 p-3 rounded-xl bg-destructive/10 text-destructive text-sm">
+            <WifiOff className="h-4 w-4 mt-0.5 shrink-0" />
+            <div>
+              <p className="font-semibold">Aucune connexion internet</p>
+              <p className="text-xs opacity-80 mt-0.5">
+                Le paiement en ligne nécessite une connexion active. Rétablissez votre réseau (Wi-Fi ou données mobiles) puis réessayez. Le bouton reste désactivé tant que vous êtes hors ligne.
+              </p>
+            </div>
           </div>
         )}
 

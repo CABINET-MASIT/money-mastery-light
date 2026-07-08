@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, AreaChart, Area } from "recharts";
 import { BackButton } from "@/components/layout/BackButton";
+import { SubscriptionBadge } from "@/components/subscription/SubscriptionBadge";
 
 export default function Dashboard() {
   const { transactions, formatMoney, currentWorkspace } = useFinance();
@@ -60,10 +61,13 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 max-w-[1400px]">
       <BackButton to="/" />
-      <header>
-        <p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">{currentWorkspace.name}</p>
-        <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight mt-1">Vue d'ensemble financière</h1>
-        <p className="text-muted-foreground mt-2">Suivez en temps réel vos performances · {currentWorkspace.currency}</p>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-primary font-semibold">{currentWorkspace.name}</p>
+          <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight mt-1">Vue d'ensemble financière</h1>
+          <p className="text-muted-foreground mt-2">Suivez en temps réel vos performances · {currentWorkspace.currency}</p>
+        </div>
+        <SubscriptionBadge />
       </header>
 
       <section className="space-y-3">

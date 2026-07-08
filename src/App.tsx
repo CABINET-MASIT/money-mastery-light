@@ -13,6 +13,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound.tsx";
 import Payment from "./pages/Payment";
 import { FinanceProvider } from "./lib/finance/store";
+import { PremiumGuard } from "./components/subscription/PremiumGuard";
 
 const queryClient = new QueryClient();
 
@@ -26,13 +27,15 @@ const App = () => (
           <Routes>
             <Route element={<AppLayout />}>
               <Route path="/" element={<Home />} />
-              <Route path="/tableau-de-bord" element={<Dashboard />} />
-              <Route path="/revenus" element={<Revenues />} />
-              <Route path="/depenses" element={<Expenses />} />
-              <Route path="/synthese/revenus" element={<Synthesis type="revenue" />} />
-              <Route path="/synthese/depenses" element={<Synthesis type="expense" />} />
-              <Route path="/parametres" element={<Settings />} />
               <Route path="/paiement" element={<Payment />} />
+              <Route path="/parametres" element={<Settings />} />
+              <Route element={<PremiumGuard />}>
+                <Route path="/tableau-de-bord" element={<Dashboard />} />
+                <Route path="/revenus" element={<Revenues />} />
+                <Route path="/depenses" element={<Expenses />} />
+                <Route path="/synthese/revenus" element={<Synthesis type="revenue" />} />
+                <Route path="/synthese/depenses" element={<Synthesis type="expense" />} />
+              </Route>
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

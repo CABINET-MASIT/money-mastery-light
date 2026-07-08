@@ -4,6 +4,7 @@ import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
+import { SubscriptionBadge } from "@/components/subscription/SubscriptionBadge";
 
 const items = [
   { title: "Accueil", url: "/", icon: Home },
@@ -61,7 +62,8 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="px-4 py-4">
+      <SidebarFooter className="px-4 py-4 space-y-3">
+        {!collapsed && <SubscriptionBadge variant="full" />}
         {!collapsed && (
           <div className="rounded-lg bg-sidebar-accent/60 p-3 text-xs text-sidebar-foreground/70">
             <p className="font-semibold text-sidebar-foreground">Astuce</p>

@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      payment_attempts: {
+        Row: {
+          amount: number
+          callback_url: string | null
+          country: string | null
+          created_at: string
+          currency: string
+          error: string | null
+          failure_url: string | null
+          id: string
+          payment_url: string | null
+          provider_response: Json | null
+          return_url: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          callback_url?: string | null
+          country?: string | null
+          created_at?: string
+          currency: string
+          error?: string | null
+          failure_url?: string | null
+          id?: string
+          payment_url?: string | null
+          provider_response?: Json | null
+          return_url?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          callback_url?: string | null
+          country?: string | null
+          created_at?: string
+          currency?: string
+          error?: string | null
+          failure_url?: string | null
+          id?: string
+          payment_url?: string | null
+          provider_response?: Json | null
+          return_url?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

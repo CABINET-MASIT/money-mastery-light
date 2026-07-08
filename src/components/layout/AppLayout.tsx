@@ -5,6 +5,7 @@ import { MobileNav } from "./MobileNav";
 import { WorkspaceSwitcher } from "@/components/workspace/WorkspaceSwitcher";
 import { OnboardingDialog } from "@/components/onboarding/OnboardingDialog";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { SubscriptionBadge } from "@/components/subscription/SubscriptionBadge";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function AppLayout() {
@@ -26,6 +27,7 @@ export default function AppLayout() {
             )}
             <WorkspaceSwitcher />
             <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
+              <SubscriptionBadge />
               <span className="hidden sm:inline">Hors ligne</span>
               <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
             </div>
