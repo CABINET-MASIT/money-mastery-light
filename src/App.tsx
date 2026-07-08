@@ -11,6 +11,7 @@ import Expenses from "./pages/Expenses";
 import Synthesis from "./pages/Synthesis";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound.tsx";
+import Payment from "./pages/Payment";
 import { FinanceProvider } from "./lib/finance/store";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
               <Route path="/synthese/revenus" element={<Synthesis type="revenue" />} />
               <Route path="/synthese/depenses" element={<Synthesis type="expense" />} />
               <Route path="/parametres" element={<Settings />} />
+              <Route path="/paiement" element={<Payment />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
