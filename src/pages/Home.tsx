@@ -1,9 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { TrendingUp, TrendingDown, PieChart, BarChart3, Wallet, Settings as SettingsIcon, ArrowRightLeft } from "lucide-react";
 import { useFinance } from "@/lib/finance/store";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import defaultLogo from "@/assets/cmasit-logo.jpg";
 import { TransferDialog } from "@/components/finance/TransferDialog";
+import { SubscriptionBadge } from "@/components/subscription/SubscriptionBadge";
+import { activateSubscription, useSubscription } from "@/hooks/useSubscription";
+import { toast } from "sonner";
 
 interface Tile {
   key: string;
@@ -29,8 +32,28 @@ export default function Home() {
   const nav = useNavigate();
   const { transactions, formatMoney, currentWorkspace } = useFinance();
   const [transferOpen, setTransferOpen] = useState(false);
+  const { refresh } = useSubscription();
 
   const logoSrc = currentWorkspace.logo || defaultLogo;
+
+  // Handle payment return + refresh subscription state on landing
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get("paiement");
+    if (status === "succes") {
+      activateSubscription();
+      toast.success("Paiement confirmé — abonnement activé pour 8h");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("paiement");
+      window.history.replaceState({}, "", url.toString());
+    } else if (status === "echec") {
+      toast.error("Paiement échoué");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("paiement");
+      window.history.replaceState({}, "", url.toString());
+    }
+    refresh();
+  }, [refresh]);
 
   const { rev, exp } = useMemo(() => {
     let rev = 0, exp = 0;
@@ -59,6 +82,9 @@ export default function Home() {
           <p className="mt-2 px-3 py-1 rounded-md bg-white text-primary text-xs font-semibold tracking-wide">
             Gérer les revenus et dépenses
           </p>
+          <div className="mt-4">
+            <SubscriptionBadge />
+          </div>
         </div>
 
         {/* Balance label — sticker */}
