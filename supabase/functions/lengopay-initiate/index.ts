@@ -37,8 +37,8 @@ Deno.serve(async (req) => {
   };
 
   try {
-    const licenseKey = Deno.env.get('LENGOPAY_LICENSE_KEY');
-    const websiteId = Deno.env.get('LENGOPAY_WEBSITE_ID');
+    const licenseKey = Deno.env.get('LENGOPAY_LICENSE_KEY_V2') || Deno.env.get('LENGOPAY_LICENSE_KEY');
+    const websiteId = Deno.env.get('LENGOPAY_WEBSITE_ID_V2') || Deno.env.get('LENGOPAY_WEBSITE_ID');
 
     if (!licenseKey || !websiteId) {
       console.error('Missing Lengo Pay secrets');
