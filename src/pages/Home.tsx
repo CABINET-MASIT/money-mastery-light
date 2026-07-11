@@ -42,7 +42,7 @@ export default function Home() {
     const status = params.get("paiement");
     if (status === "succes") {
       activateSubscription();
-      toast.success("Paiement confirmé — abonnement activé pour 1h");
+      toast.success("Paiement confirmé — abonnement activé pour 1 an");
       const url = new URL(window.location.href);
       url.searchParams.delete("paiement");
       window.history.replaceState({}, "", url.toString());
