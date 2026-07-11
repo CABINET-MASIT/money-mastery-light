@@ -129,7 +129,7 @@ export default function Payment() {
 
         <div className="flex items-baseline gap-2">
           <span className="font-display text-4xl font-bold text-primary">{priceLabel}</span>
-          <span className="text-sm text-muted-foreground">/ 8 heures</span>
+          <span className="text-sm text-muted-foreground">/ 1 heure</span>
         </div>
 
         <ul className="space-y-2 text-sm">
