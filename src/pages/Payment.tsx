@@ -38,7 +38,7 @@ export default function Payment() {
     const status = params.get("paiement");
     if (status === "succes") {
       activateSubscription();
-      toast({ title: "Paiement confirmé", description: "Votre abonnement est actif pour 8 heures." });
+      toast({ title: "Paiement confirmé", description: "Votre abonnement est actif pour 1 heure." });
       const url = new URL(window.location.href);
       url.searchParams.delete("paiement");
       window.history.replaceState({}, "", url.toString());
