@@ -70,6 +70,12 @@ export function AppSidebar() {
             <p className="mt-1">Utilisez les filtres avancés pour analyser une période précise.</p>
           </div>
         )}
+        {!collapsed && (
+          <div className="pt-2 border-t border-sidebar-border/60 text-[10px] leading-tight text-sidebar-foreground/60 text-center">
+            <p className="font-semibold text-sidebar-foreground/80">Créé par MASIT Consulting</p>
+            <a href="tel:+224627764443" className="hover:text-primary">Tél : 627 76 44 43</a>
+          </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );

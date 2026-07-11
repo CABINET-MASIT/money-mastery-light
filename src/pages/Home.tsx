@@ -42,7 +42,7 @@ export default function Home() {
     const status = params.get("paiement");
     if (status === "succes") {
       activateSubscription();
-      toast.success("Paiement confirmé — abonnement activé pour 1h");
+      toast.success("Paiement confirmé — abonnement activé pour 1 an");
       const url = new URL(window.location.href);
       url.searchParams.delete("paiement");
       window.history.replaceState({}, "", url.toString());
@@ -137,7 +137,7 @@ export default function Home() {
         </div>
 
         <p className="text-center text-[10px] tracking-[0.25em] text-muted-foreground/70 mt-10 font-semibold">
-          COPYRIGHT CMASIT · TEL 620 41 82 95
+          CRÉÉ PAR MASIT CONSULTING · TÉL 627 76 44 43
         </p>
       </section>
 

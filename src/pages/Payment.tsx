@@ -38,7 +38,7 @@ export default function Payment() {
     const status = params.get("paiement");
     if (status === "succes") {
       activateSubscription();
-      toast({ title: "Paiement confirmé", description: "Votre abonnement est actif pour 1 heure." });
+      toast({ title: "Paiement confirmé", description: "Votre abonnement est actif pour 1 an." });
       const url = new URL(window.location.href);
       url.searchParams.delete("paiement");
       window.history.replaceState({}, "", url.toString());
@@ -124,12 +124,12 @@ export default function Payment() {
         </div>
         <h1 className="font-display text-3xl font-bold">Accès Premium FinancePilote</h1>
         <p className="text-muted-foreground text-sm">
-          Débloquez toutes les fonctionnalités pendant 1 heure.
+          Débloquez toutes les fonctionnalités pendant 1 an.
         </p>
 
         <div className="flex items-baseline gap-2">
           <span className="font-display text-4xl font-bold text-primary">{priceLabel}</span>
-          <span className="text-sm text-muted-foreground">/ 1 heure</span>
+          <span className="text-sm text-muted-foreground">/ 1 an</span>
         </div>
 
         <ul className="space-y-2 text-sm">
