@@ -37,8 +37,18 @@ Deno.serve(async (req) => {
   };
 
   try {
-    const licenseKey = Deno.env.get('LENGOPAY_LICENSE_KEY_V2') || Deno.env.get('LENGOPAY_LICENSE_KEY');
-    const websiteId = Deno.env.get('LENGOPAY_WEBSITE_ID_V2') || Deno.env.get('LENGOPAY_WEBSITE_ID');
+    const licenseKey = (
+      Deno.env.get('LENGOPAY_LICENSE_KEY_ACTIVE') ||
+      Deno.env.get('LENGOPAY_LICENSE_KEY_V2') ||
+      Deno.env.get('LENGOPAY_LICENSE_KEY') ||
+      ''
+    ).trim();
+    const websiteId = (
+      Deno.env.get('LENGOPAY_WEBSITE_ID_ACTIVE') ||
+      Deno.env.get('LENGOPAY_WEBSITE_ID_V2') ||
+      Deno.env.get('LENGOPAY_WEBSITE_ID') ||
+      ''
+    ).trim();
 
     if (!licenseKey || !websiteId) {
       console.error('Missing Lengo Pay secrets');
@@ -87,10 +97,13 @@ Deno.serve(async (req) => {
 
     if (!lpRes.ok) {
       console.error('Lengo Pay error', lpRes.status, text);
+      const message = lpRes.status === 401
+        ? 'Identifiants Lengo Pay refusés. Vérifiez que le compte marchand est activé et que la License Key correspond au Website ID.'
+        : 'Erreur passerelle Lengo Pay';
       await logAttempt({ status: 'gateway_error', provider_response: data, error: `HTTP ${lpRes.status}` });
       return new Response(
-        JSON.stringify({ error: 'Erreur passerelle Lengo Pay', status: lpRes.status, details: data }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: message, status: lpRes.status, details: data }),
+        { status: lpRes.status === 401 ? 401 : 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
