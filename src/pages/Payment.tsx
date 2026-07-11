@@ -124,12 +124,12 @@ export default function Payment() {
         </div>
         <h1 className="font-display text-3xl font-bold">Accès Premium FinancePilote</h1>
         <p className="text-muted-foreground text-sm">
-          Débloquez toutes les fonctionnalités pendant 1 heure.
+          Débloquez toutes les fonctionnalités pendant 1 an.
         </p>
 
         <div className="flex items-baseline gap-2">
           <span className="font-display text-4xl font-bold text-primary">{priceLabel}</span>
-          <span className="text-sm text-muted-foreground">/ 1 heure</span>
+          <span className="text-sm text-muted-foreground">/ 1 an</span>
         </div>
 
         <ul className="space-y-2 text-sm">
