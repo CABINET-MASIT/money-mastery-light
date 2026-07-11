@@ -137,7 +137,7 @@ export default function Home() {
         </div>
 
         <p className="text-center text-[10px] tracking-[0.25em] text-muted-foreground/70 mt-10 font-semibold">
-          COPYRIGHT CMASIT · TEL 620 41 82 95
+          CRÉÉ PAR MASIT CONSULTING · TÉL 627 76 44 43
         </p>
       </section>
 
