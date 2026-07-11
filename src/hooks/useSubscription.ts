@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 
 const STORAGE_KEY = "bepc_subscription_v1";
 const TRIAL_KEY = "bepc_first_launch_v1";
-const SUBSCRIPTION_MS = 8 * 60 * 60 * 1000; // 8 hours
+const SUBSCRIPTION_MS = 1 * 60 * 60 * 1000; // 1 hour
 const TRIAL_MS = 5 * 60 * 1000; // 5 minutes
 const EVENT_NAME = "subscription-changed";
 
