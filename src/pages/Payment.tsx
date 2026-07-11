@@ -120,11 +120,11 @@ export default function Payment() {
       <Card className="p-6 rounded-3xl shadow-card space-y-4">
         <div className="flex items-center gap-2 text-primary">
           <Sparkles className="h-5 w-5" />
-          <span className="text-xs font-bold uppercase tracking-wider">Offre annuelle</span>
+          <span className="text-xs font-bold uppercase tracking-wider">Accès premium</span>
         </div>
         <h1 className="font-display text-3xl font-bold">Accès Premium FinancePilote</h1>
         <p className="text-muted-foreground text-sm">
-          Débloquez toutes les fonctionnalités pendant 1 an complet.
+          Débloquez toutes les fonctionnalités pendant 1 heure.
         </p>
 
         <div className="flex items-baseline gap-2">
